@@ -3,7 +3,11 @@
  * https://github.com/Nutlope/twitterbio
  */
 
-import { OpenAIStream, OpenAIStreamPayload } from "../../../utils/OpenAIStream";
+import {
+  ChatGPTMessage,
+  OpenAIStream,
+  OpenAIStreamPayload,
+} from "../../../utils/OpenAIStream";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
@@ -15,7 +19,7 @@ export const config = {
 
 export async function POST(req: Request): Promise<Response> {
   const { prompt } = (await req.json()) as {
-    prompt?: string;
+    prompt?: ChatGPTMessage[];
   };
 
   if (!prompt) {
@@ -27,7 +31,7 @@ export async function POST(req: Request): Promise<Response> {
    */
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
-    messages: [{ role: "user", content: prompt }],
+    messages: prompt,
     temperature: 0.7,
     top_p: 1,
     frequency_penalty: 0,
