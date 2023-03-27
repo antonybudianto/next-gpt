@@ -1,12 +1,8 @@
-import { Inter } from "next/font/google";
 import HomeClient from "./components/HomeClient";
-import styles from "./page.module.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   return (
-    <main className="container mx-auto mt-10">
+    <main className="container mx-auto mt-10 max-w-2xl">
       <HomeClient />
     </main>
   );

@@ -8,38 +8,43 @@ export default function HomeClient() {
   const [loading, setLoading] = useState(false);
 
   const generate = async (promptText: string) => {
-    // e.preventDefault();
     setOutput("");
     setLoading(true);
-    const response = await fetch("/api/gpt", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt: promptText,
-      }),
-    });
+    try {
+      const response = await fetch("/api/gpt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: promptText,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
 
-    // This data is a ReadableStream
-    const data = response.body;
-    if (!data) {
-      return;
-    }
+      // This data is a ReadableStream
+      const data = response.body;
+      if (!data) {
+        return;
+      }
 
-    const reader = data.getReader();
-    const decoder = new TextDecoder();
-    let done = false;
+      const reader = data.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
 
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-      const chunkValue = decoder.decode(value);
-      setOutput((prev) => prev + chunkValue);
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value);
+        setOutput((prev) => prev + chunkValue);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,17 +58,23 @@ export default function HomeClient() {
 
   return (
     <div className="flex flex-col">
+      <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
+        ChatGPT
+      </h1>
       <textarea
-        className="px-3 py-2"
+        className="px-3 py-2 mt-5"
+        placeholder="Input your prompt"
         onChange={handleChange}
         value={prompt}
+        disabled={loading}
       ></textarea>
       <button
         type="button"
-        className="px-2 py-3 bg-gray-900"
+        className="px-2 py-3 bg-gray-900 mt-3 disabled:bg-gray-600"
         onClick={handleSubmit}
+        disabled={loading}
       >
-        Generate
+        Send
       </button>
       <div className="mt-20">{output}</div>
     </div>
