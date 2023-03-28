@@ -18,95 +18,98 @@ export default function HomeClient() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [rows, setRows] = useState(1);
 
-  const generate = async (promptText: string) => {
-    setLoading(true);
-    setChats((_chats) => {
-      return [
-        ..._chats,
-        { user: "user", prompt: prompt },
-        { user: "bot", prompt: "..." },
-      ];
-    });
-
-    /**
-     * To give context to the API
-     */
-    const assistances = chats.map((_chat) => {
-      return {
-        role: _chat.user === "bot" ? "assistant" : "user",
-        content: _chat.prompt,
-      };
-    });
-    let payload = [
-      ...assistances,
-      {
-        role: "user",
-        content: promptText,
-      },
-    ];
-
-    let tokenOk = false;
-    let finalPayload = [];
-
-    let tokenCount = 0;
-    for (let i = payload.length - 1; i >= 0; i--) {
-      tokenCount += encode(payload[i].content).length;
-      tokenOk = tokenCount < MAX_TOKEN;
-      if (tokenOk) {
-        finalPayload.push(payload[i]);
-      } else {
-        console.warn("Token limit reached: ", tokenCount);
-        break;
-      }
-    }
-    finalPayload.reverse();
-
-    try {
-      const response = await fetch("/api/gpt", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt: finalPayload,
-        }),
+  const generate = useCallback(
+    async (promptText: string) => {
+      setLoading(true);
+      setChats((_chats) => {
+        return [
+          ..._chats,
+          { user: "user", prompt: prompt },
+          { user: "bot", prompt: "..." },
+        ];
       });
 
-      if (!response.ok) {
-        throw new Error(response.statusText);
+      /**
+       * To give context to the API
+       */
+      const assistances = chats.map((_chat) => {
+        return {
+          role: _chat.user === "bot" ? "assistant" : "user",
+          content: _chat.prompt,
+        };
+      });
+      let payload = [
+        ...assistances,
+        {
+          role: "user",
+          content: promptText,
+        },
+      ];
+
+      let tokenOk = false;
+      let finalPayload = [];
+
+      let tokenCount = 0;
+      for (let i = payload.length - 1; i >= 0; i--) {
+        tokenCount += encode(payload[i].content).length;
+        tokenOk = tokenCount < MAX_TOKEN;
+        if (tokenOk) {
+          finalPayload.push(payload[i]);
+        } else {
+          console.warn("Token limit reached: ", tokenCount);
+          break;
+        }
       }
+      finalPayload.reverse();
 
-      // This data is a ReadableStream
-      const data = response.body;
-      if (!data) {
-        return;
-      }
-
-      const reader = data.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-        const chunkValue = decoder.decode(value);
-
-        setChats((_chats) => {
-          let lastChat = { ..._chats[_chats.length - 1] };
-          if (lastChat.prompt === "...") {
-            lastChat.prompt = "";
-          }
-          lastChat.prompt += chunkValue;
-          return [..._chats.slice(0, _chats.length - 1), lastChat];
+      try {
+        const response = await fetch("/api/gpt", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt: finalPayload,
+          }),
         });
-        window.scrollTo(0, document.body.scrollHeight);
+
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+
+        // This data is a ReadableStream
+        const data = response.body;
+        if (!data) {
+          return;
+        }
+
+        const reader = data.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          const chunkValue = decoder.decode(value);
+
+          setChats((_chats) => {
+            let lastChat = { ..._chats[_chats.length - 1] };
+            if (lastChat.prompt === "...") {
+              lastChat.prompt = "";
+            }
+            lastChat.prompt += chunkValue;
+            return [..._chats.slice(0, _chats.length - 1), lastChat];
+          });
+          window.scrollTo(0, document.body.scrollHeight);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [chats, prompt]
+  );
 
   const handleChange = useCallback((e: any) => {
     setPrompt(e.target.value);
@@ -120,7 +123,7 @@ export default function HomeClient() {
       generate(prompt);
       setPrompt("");
     },
-    [prompt]
+    [prompt, generate]
   );
 
   const handleKey = useCallback(
@@ -131,7 +134,7 @@ export default function HomeClient() {
         setPrompt("");
       }
     },
-    [prompt]
+    [prompt, generate]
   );
 
   return (
@@ -150,6 +153,7 @@ export default function HomeClient() {
             }`}
             key={i}
           >
+            {/* eslint-disable */}
             <ReactMarkdown children={chat.prompt} remarkPlugins={[remarkGfm]} />
           </div>
         ))}
