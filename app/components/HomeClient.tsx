@@ -16,6 +16,7 @@ export default function HomeClient() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [rows, setRows] = useState(1);
 
   const generate = async (promptText: string) => {
     setLoading(true);
@@ -114,6 +115,8 @@ export default function HomeClient() {
 
   const handleChange = useCallback((e: any) => {
     setPrompt(e.target.value);
+    let numberOfLineBreaks = (e.target.value.match(/\n/g) || []).length;
+    setRows(numberOfLineBreaks || 1);
   }, []);
 
   const handleSubmit = useCallback(
@@ -125,7 +128,7 @@ export default function HomeClient() {
   );
 
   return (
-    <div className="flex flex-col mb-16">
+    <div className="flex flex-col mb-36">
       <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
         ChatGPT
       </h1>
@@ -145,9 +148,14 @@ export default function HomeClient() {
         ))}
       </div>
       <form noValidate onSubmit={handleSubmit}>
-        <div className="flex justify-center align-center fixed mb-10 bottom-2 left-0 right-0">
+        <div className="flex justify-center items-end fixed mb-10 bottom-2 left-0 right-0">
           <textarea
-            className="px-4 py-3 h-12 max-h-12 w-2/4 rounded"
+            className="px-4 py-3 w-2/4 rounded"
+            rows={rows}
+            style={{
+              maxHeight: "200px",
+              resize: "none",
+            }}
             placeholder="Input your prompt"
             onChange={handleChange}
             value={prompt}
@@ -155,7 +163,7 @@ export default function HomeClient() {
           ></textarea>
           <button
             type="submit"
-            className="px-5 py-0 bg-gray-800 font-bold rounded text-2xl hover:bg-gray-700 disabled:bg-gray-600"
+            className="px-5 h-12 py-0 bg-gray-800 font-bold rounded text-2xl hover:bg-gray-700 disabled:bg-gray-600"
             disabled={loading}
           >
             {">"}
