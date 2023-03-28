@@ -1,8 +1,10 @@
 export default function Head() {
   return (
     <>
+      <title>Next GPT</title>
       <link rel="manifest" href="/manifest.json" />
       <link rel="icon" href="/favicon.ico?v=2" />
+      <meta name="description" content="NextGPT for personal usage" />
       <meta
         name="viewport"
         content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, user-scalable=no, viewport-fit=cover"

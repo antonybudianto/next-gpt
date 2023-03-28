@@ -159,7 +159,7 @@ export default function HomeClient() {
         ))}
       </div>
       <form noValidate onSubmit={handleSubmit}>
-        <div className="flex justify-center items-end px-3 fixed pb-3 lg:pb-5 bottom-0 left-0 right-0 lg:px-0">
+        <div className="flex justify-center items-end px-3 fixed pb-4 lg:pb-5 bottom-0 left-0 right-0 lg:px-0">
           <textarea
             className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded"
             rows={rows}
