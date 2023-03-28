@@ -138,7 +138,7 @@ export default function HomeClient() {
   );
 
   return (
-    <div className="flex flex-col px-3 lg:px-0 lg:mb-36">
+    <div className="flex flex-col px-3 lg:px-0 mb-16 lg:mb-36">
       <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
         NextGPT
       </h1>
@@ -159,9 +159,9 @@ export default function HomeClient() {
         ))}
       </div>
       <form noValidate onSubmit={handleSubmit}>
-        <div className="flex justify-center items-end px-3 fixed pb-5 bottom-0 left-0 right-0 lg:px-0">
+        <div className="flex justify-center items-end px-3 fixed pb-3 lg:pb-5 bottom-0 left-0 right-0 lg:px-0">
           <textarea
-            className="px-4 py-3 w-full lg:w-2/4 rounded"
+            className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded"
             rows={rows}
             style={{
               maxHeight: "200px",
