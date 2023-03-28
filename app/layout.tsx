@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "GPT Web",
+  title: "Next GPT",
   description: "Custom GPT Web",
 };
 

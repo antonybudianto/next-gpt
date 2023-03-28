@@ -1,7 +1,7 @@
 "use client";
 
 import { encode } from "@nem035/gpt-3-encoder";
-import { useCallback, useState } from "react";
+import { ChangeEvent, KeyboardEvent, useCallback, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -31,17 +31,12 @@ export default function HomeClient() {
     /**
      * To give context to the API
      */
-    const assistances = chats
-      /**
-       * @TODO not sure to include user chats as well to the payload...
-       */
-      // .filter((_chat) => _chat.user === "bot")
-      .map((_chat) => {
-        return {
-          role: _chat.user === "bot" ? "assistant" : "user",
-          content: _chat.prompt,
-        };
-      });
+    const assistances = chats.map((_chat) => {
+      return {
+        role: _chat.user === "bot" ? "assistant" : "user",
+        content: _chat.prompt,
+      };
+    });
     let payload = [
       ...assistances,
       {
@@ -120,17 +115,29 @@ export default function HomeClient() {
   }, []);
 
   const handleSubmit = useCallback(
-    (e: any) => {
+    (e: ChangeEvent<HTMLFormElement>) => {
       e.preventDefault();
       generate(prompt);
+      setPrompt("");
+    },
+    [prompt]
+  );
+
+  const handleKey = useCallback(
+    (evt: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (evt.key === "Enter" && !evt.shiftKey) {
+        evt.preventDefault();
+        generate(prompt);
+        setPrompt("");
+      }
     },
     [prompt]
   );
 
   return (
-    <div className="flex flex-col mb-36">
+    <div className="flex flex-col px-3 lg:px-0 lg:mb-36">
       <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
-        ChatGPT
+        NextGPT
       </h1>
 
       <div className="my-5">
@@ -148,9 +155,9 @@ export default function HomeClient() {
         ))}
       </div>
       <form noValidate onSubmit={handleSubmit}>
-        <div className="flex justify-center items-end fixed mb-10 bottom-2 left-0 right-0">
+        <div className="flex justify-center items-end px-3 fixed pb-5 bottom-0 left-0 right-0 lg:px-0">
           <textarea
-            className="px-4 py-3 w-2/4 rounded"
+            className="px-4 py-3 w-full lg:w-2/4 rounded"
             rows={rows}
             style={{
               maxHeight: "200px",
@@ -158,6 +165,7 @@ export default function HomeClient() {
             }}
             placeholder="Input your prompt"
             onChange={handleChange}
+            onKeyDown={handleKey}
             value={prompt}
             disabled={loading}
           ></textarea>
