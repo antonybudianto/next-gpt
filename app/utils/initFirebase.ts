@@ -7,7 +7,7 @@ const config: FirebaseOptions = {
   //   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   //   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   apiKey: "AIzaSyC10QGQB6zGmTQnK1FLW4k2I2-C5HLIL3M",
-  authDomain: "next-gpt.firebaseapp.com",
+  authDomain: "ngpt.vercel.app",
   projectId: "next-gpt",
   storageBucket: "next-gpt.appspot.com",
   messagingSenderId: "693328635564",

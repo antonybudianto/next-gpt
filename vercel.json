@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+      {
+        "source": "/__/auth/:match*",
+        "destination": "https://next-gpt.firebaseapp.com/__/auth/:match*"
+      }
+    ]
+}
