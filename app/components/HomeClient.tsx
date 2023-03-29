@@ -1,7 +1,15 @@
 "use client";
 
+import "@/app/utils/initFirebase";
 import { encode } from "@nem035/gpt-3-encoder";
-import { ChangeEvent, KeyboardEvent, useCallback, useState } from "react";
+import { UserInfo, getAuth, signOut } from "firebase/auth";
+import {
+  ChangeEvent,
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -15,8 +23,26 @@ const MAX_TOKEN = 4096;
 export default function HomeClient() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authUser, setAuthUser] = useState<UserInfo | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
   const [rows, setRows] = useState(1);
+
+  useEffect(() => {
+    const auth = getAuth();
+    auth.onAuthStateChanged((user) => {
+      if (
+        user &&
+        user.emailVerified &&
+        user.email === "antonybudianto@gmail.com"
+      ) {
+        setAuthLoading(false);
+        setAuthUser(user);
+      } else {
+        window.location.replace("/login");
+      }
+    });
+  }, []);
 
   const generate = useCallback(
     async (promptText: string) => {
@@ -137,51 +163,74 @@ export default function HomeClient() {
     [prompt, generate]
   );
 
+  const logout = useCallback(() => {
+    signOut(getAuth());
+  }, []);
+
   return (
     <div className="flex flex-col px-3 lg:px-0 mb-16 lg:mb-36">
       <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
         NextGPT
       </h1>
 
-      <div className="my-5">
-        {chats.map((chat, i) => (
-          <div
-            className={`px-3 py-2 rounded ${
-              chat.user === "bot"
-                ? "bg-gray-800 text-gray-300 mt-0"
-                : "bg-gray-900 mt-3"
-            }`}
-            key={i}
-          >
-            {/* eslint-disable */}
-            <ReactMarkdown children={chat.prompt} remarkPlugins={[remarkGfm]} />
+      {authLoading ? (
+        <div className="my-5">Checking auth...</div>
+      ) : (
+        <>
+          <div className="mt-1">
+            Welcome, {authUser?.displayName} -{" "}
+            <a
+              href="#"
+              onClick={logout}
+              className="text-blue-300 hover:underline"
+            >
+              Logout
+            </a>
           </div>
-        ))}
-      </div>
-      <form noValidate onSubmit={handleSubmit}>
-        <div className="flex justify-center items-end px-3 fixed pb-4 lg:pb-5 bottom-0 left-0 right-0 lg:px-0">
-          <textarea
-            className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded"
-            rows={rows}
-            style={{
-              maxHeight: "200px",
-              resize: "none",
-            }}
-            placeholder="Input your prompt"
-            onChange={handleChange}
-            onKeyDown={handleKey}
-            value={prompt}
-            disabled={loading}
-          ></textarea>
-          <button
-            type="submit"
-            className="px-5 h-12 py-0 bg-gray-800 font-bold rounded text-2xl hover:bg-gray-700 disabled:bg-gray-600"
-            disabled={loading}
-          >
-            {">"}
-          </button>
-        </div>
-      </form>
+          <div className="my-5">
+            {chats.map((chat, i) => (
+              <div
+                className={`px-3 py-2 rounded ${
+                  chat.user === "bot"
+                    ? "bg-gray-800 text-gray-300 mt-0"
+                    : "bg-gray-900 mt-3"
+                }`}
+                key={i}
+              >
+                {/* eslint-disable */}
+                <ReactMarkdown
+                  children={chat.prompt}
+                  remarkPlugins={[remarkGfm]}
+                />
+              </div>
+            ))}
+          </div>
+          <form noValidate onSubmit={handleSubmit}>
+            <div className="flex justify-center items-end px-3 fixed pb-4 lg:pb-5 bottom-0 left-0 right-0 lg:px-0">
+              <textarea
+                className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded"
+                rows={rows}
+                style={{
+                  maxHeight: "200px",
+                  resize: "none",
+                }}
+                placeholder="Input your prompt"
+                onChange={handleChange}
+                onKeyDown={handleKey}
+                value={prompt}
+                disabled={loading}
+              ></textarea>
+              <button
+                type="submit"
+                className="px-5 h-12 py-0 bg-gray-800 font-bold rounded text-2xl hover:bg-gray-700 disabled:bg-gray-600"
+                disabled={loading}
+              >
+                {">"}
+              </button>
+            </div>
+          </form>
+        </>
+      )}
     </div>
   );
 }
