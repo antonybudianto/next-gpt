@@ -24,7 +24,7 @@ export default function HomeClient() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [authUser, setAuthUser] = useState<UserInfo | null>(null);
+  const [authUser, setAuthUser] = useState<UserInfo | null>();
   const [chats, setChats] = useState<Chat[]>([]);
   const [rows, setRows] = useState(1);
 
@@ -174,7 +174,17 @@ export default function HomeClient() {
       </h1>
 
       {authLoading ? (
-        <div className="my-5">Checking auth...</div>
+        <div className="mt-1">
+          <div className="max-w-sm w-full">
+            <div className="animate-pulse flex space-x-4">
+              <div className="flex-1 space-y-6 py-1">
+                <div className="space-y-3">
+                  <div className="h-5 bg-slate-700 rounded"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
         <>
           <div className="mt-1">

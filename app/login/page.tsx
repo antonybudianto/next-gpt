@@ -29,11 +29,13 @@ export default function LoginView() {
   }, []);
 
   return (
-    <div className="container mx-3 md:mx-auto">
-      <div className="mt-3 py-5 bg-light rounded md:my-28">
-        <h1 className="text-4xl mb-10">NextGPT Login</h1>
+    <div className="container mx-auto mt-3 lg:mt-10 max-w-3xl">
+      <div className="bg-light px-3 lg:px-0 rounded md:my-28">
+        <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
+          NextGPT
+        </h1>
         {loading ? (
-          <div>Checking, please wait...</div>
+          <div className="mt-1">Checking, please wait...</div>
         ) : (
           <>
             <p className="lead">
