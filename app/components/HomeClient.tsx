@@ -194,12 +194,12 @@ export default function HomeClient() {
         </div>
       ) : (
         <>
-          <div className="mt-1">
-            Welcome, {authUser?.displayName} -{" "}
+          <div className="mt-1 flex flex-row justify-between">
+            <div>Welcome, {authUser?.displayName}</div>
             <a
               href="#"
               onClick={logout}
-              className="text-blue-300 hover:underline"
+              className="text-blue-300 hover:underline text-sm"
             >
               Logout
             </a>
@@ -225,7 +225,7 @@ export default function HomeClient() {
           <form noValidate onSubmit={handleSubmit}>
             <div className="flex justify-center items-end px-3 fixed pb-4 lg:pb-5 bottom-0 left-0 right-0 lg:px-0">
               <textarea
-                className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded"
+                className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded rounded-r-none"
                 rows={rows}
                 style={{
                   maxHeight: "200px",
@@ -239,8 +239,8 @@ export default function HomeClient() {
               ></textarea>
               <button
                 type="submit"
-                className="px-5 h-12 py-0 bg-gray-800 font-bold rounded text-2xl hover:bg-gray-700 disabled:bg-gray-600"
-                disabled={loading}
+                className="px-5 h-12 py-0 bg-gray-800 font-bold rounded rounded-l-none text-gray-100 text-2xl hover:bg-gray-600 disabled:bg-gray-500"
+                disabled={loading || !prompt}
               >
                 {">"}
               </button>
