@@ -25,6 +25,7 @@ export default function HomeClient() {
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [authUser, setAuthUser] = useState<UserInfo | null>();
+  const [idToken, setIdToken] = useState("");
   const [chats, setChats] = useState<Chat[]>([]);
   const [rows, setRows] = useState(1);
 
@@ -36,8 +37,13 @@ export default function HomeClient() {
         user.emailVerified &&
         user.email === "antonybudianto@gmail.com"
       ) {
-        setAuthLoading(false);
         setAuthUser(user);
+        user.getIdToken(true).then((idToken) => {
+          if (idToken) {
+            setAuthLoading(false);
+            setIdToken(idToken);
+          }
+        });
       } else {
         window.location.replace("/login");
       }
@@ -92,6 +98,7 @@ export default function HomeClient() {
         const response = await fetch("/api/gpt", {
           method: "POST",
           headers: {
+            "X-Idtoken": idToken,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -134,7 +141,7 @@ export default function HomeClient() {
         setLoading(false);
       }
     },
-    [chats, prompt]
+    [chats, prompt, idToken]
   );
 
   const handleChange = useCallback((e: any) => {
