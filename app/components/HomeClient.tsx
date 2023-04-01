@@ -12,6 +12,7 @@ import {
 } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { isWhitelisted } from "../utils/whitelist";
 
 interface Chat {
   user: string;
@@ -32,11 +33,7 @@ export default function HomeClient() {
   useEffect(() => {
     const auth = getAuth();
     auth.onAuthStateChanged((user) => {
-      if (
-        user &&
-        user.emailVerified &&
-        user.email === "antonybudianto@gmail.com"
-      ) {
+      if (user && user.emailVerified && isWhitelisted(user.email || "")) {
         setAuthUser(user);
         user.getIdToken(true).then((idToken) => {
           if (idToken) {

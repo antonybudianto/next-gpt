@@ -3,23 +3,42 @@
 import "@/app/utils/initFirebase";
 import { useCallback, useEffect, useState } from "react";
 import { getAuth, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import { ToastContainer, toast } from "react-toastify";
+import { isWhitelisted } from "../utils/whitelist";
 
 export default function LoginView() {
   const [loading, setLoading] = useState(true);
   const signInGoogle = useCallback(() => {
+    setLoading(true);
     let provider = new GoogleAuthProvider();
     const auth = getAuth();
-    signInWithRedirect(auth, provider).then((res) => {});
+    signInWithRedirect(auth, provider)
+      .then((res) => {})
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
     const auth = getAuth();
     auth.onAuthStateChanged(
       (user) => {
-        if (user) {
-          window.location.replace("/");
-        } else {
+        if (!user) {
           setLoading(false);
+          return;
+        }
+        if (!user.emailVerified) {
+          toast("Your email is not verified", {
+            type: "error",
+          });
+          setLoading(false);
+        } else if (!isWhitelisted(user.email || "")) {
+          toast("Your email is not whitelisted yet", {
+            type: "error",
+          });
+          setLoading(false);
+        } else {
+          window.location.replace("/");
         }
       },
       () => {
@@ -52,7 +71,7 @@ export default function LoginView() {
           </>
         )}
       </div>
-      <div className="col-md-12"></div>
+      <ToastContainer />
     </div>
   );
 }
