@@ -11,6 +11,9 @@ import {
   useState,
 } from "react";
 import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
+
 import remarkGfm from "remark-gfm";
 import { isWhitelisted } from "../utils/whitelist";
 
@@ -171,6 +174,13 @@ export default function HomeClient() {
     signOut(getAuth());
   }, []);
 
+  const markdown = `Here is some JavaScript code:
+
+~~~js
+console.log('It works!')
+~~~
+`;
+
   return (
     <div className="flex flex-col px-3 lg:px-0 mb-16 lg:mb-36">
       <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
@@ -215,6 +225,25 @@ export default function HomeClient() {
                 <ReactMarkdown
                   children={chat.prompt}
                   remarkPlugins={[remarkGfm]}
+                  components={{
+                    code({ node, inline, className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || "");
+                      return !inline && match ? (
+                        <SyntaxHighlighter
+                          children={String(children).replace(/\n$/, "")}
+                          // @ts-ignore
+                          style={dracula}
+                          language={match[1]}
+                          PreTag="div"
+                          {...props}
+                        />
+                      ) : (
+                        <code className={className} {...props}>
+                          {children}
+                        </code>
+                      );
+                    },
+                  }}
                 />
               </div>
             ))}

@@ -19,3 +19,15 @@ body {
     color-scheme: dark;
   }
 }
+
+table {
+  @apply bg-gray-900;
+}
+
+table thead {
+  @apply px-2 py-1 bg-cyan-900;
+}
+
+table td {
+  @apply px-2 py-1;
+}
