@@ -3,9 +3,11 @@
 import "@/app/utils/initFirebase";
 import { encode } from "@nem035/gpt-3-encoder";
 import { UserInfo, getAuth, signOut } from "firebase/auth";
-import {
+import React, {
   ChangeEvent,
+  Dispatch,
   KeyboardEvent,
+  SetStateAction,
   useCallback,
   useEffect,
   useState,
@@ -16,6 +18,74 @@ import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import remarkGfm from "remark-gfm";
 import { isWhitelisted } from "../utils/whitelist";
+
+const activeSide =
+  "bg-gray-800 h-screen w-3/4 lg:w-1/4 transform transition-all fixed duration-700 text-white flex flex-row justify-center p-2";
+const hiddenSide =
+  "bg-gray-800 h-screen w-3/4 lg:w-1/4 transform transition-all fixed duration-700 text-white flex flex-row justify-center p-2 -translate-x-full";
+const activeButton =
+  "absolute w-10 h-10 bg-yellow-400 top-0 cursor-pointer transition-all transform duration-700 flex items-center justify-center";
+const normalButton =
+  "absolute w-10 h-10 bg-yellow-400 top-0 cursor-pointer transition-all transform duration-700 flex items-center justify-center";
+
+const Menu = ({
+  name,
+  active,
+  setActive,
+}: {
+  name: string;
+  active: boolean;
+  setActive: Dispatch<SetStateAction<boolean>>;
+}) => {
+  const logout = useCallback(() => {
+    signOut(getAuth());
+  }, []);
+
+  return (
+    <div>
+      <div
+        id="modalmenu"
+        className={`w-screen h-screen hidden flex transform fixed left-0 top-0 transition-all duration-1000 z-30`}
+      >
+        <div></div>
+        <div className={active ? activeSide : hiddenSide}>
+          <div className="flex w-full h-10 justify-between items-center">
+            <div className="mt-10">
+              <div className="mt-1 mb-5 flex flex-row justify-between">
+                <div>Welcome, {name}</div>
+              </div>
+              <a
+                href="#"
+                onClick={logout}
+                className="text-blue-300 hover:underline text-sm"
+              >
+                Logout
+              </a>
+            </div>
+            <button
+              className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600"
+              type="button"
+              onClick={() => {
+                setActive((ac) => !ac);
+
+                setTimeout(() => {
+                  const modal = document.querySelector(
+                    "#modalmenu"
+                  ) as HTMLDivElement;
+                  if (modal) {
+                    modal.style.display = "none";
+                  }
+                }, 1000);
+              }}
+            >
+              X
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface Chat {
   user: string;
@@ -31,6 +101,7 @@ export default function HomeClient() {
   const [authUser, setAuthUser] = useState<UserInfo | null>();
   const [chats, setChats] = useState<Chat[]>([]);
   const [rows, setRows] = useState(1);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -166,10 +237,6 @@ export default function HomeClient() {
     [prompt, generate]
   );
 
-  const logout = useCallback(() => {
-    signOut(getAuth());
-  }, []);
-
   const markdown = `Here is some JavaScript code:
 
 ~~~js
@@ -179,9 +246,33 @@ console.log('It works!')
 
   return (
     <div className="flex flex-col px-3 lg:px-0 mb-16 lg:mb-36">
-      <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
-        NextGPT
-      </h1>
+      <div className="flex items-center">
+        <div
+          className="text-4xl pb-2 mr-2 rounded cursor-pointer hover:bg-gray-700"
+          onClick={() => {
+            const modal = document.querySelector(
+              "#modalmenu"
+            ) as HTMLDivElement;
+            if (modal) {
+              modal.style.display = "flex";
+            }
+            setTimeout(() => {
+              setActive((ac) => !ac);
+            }, 0);
+          }}
+        >
+          {" "}
+          &#9776;
+        </div>
+        <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
+          NextGPT
+        </h1>
+      </div>
+      <Menu
+        name={authUser?.displayName || "Guest"}
+        active={active}
+        setActive={setActive}
+      />
 
       {authLoading ? (
         <div className="mt-1">
@@ -197,17 +288,7 @@ console.log('It works!')
         </div>
       ) : (
         <>
-          <div className="mt-1 flex flex-row justify-between">
-            <div>Welcome, {authUser?.displayName}</div>
-            <a
-              href="#"
-              onClick={logout}
-              className="text-blue-300 hover:underline text-sm"
-            >
-              Logout
-            </a>
-          </div>
-          <div className="my-5">
+          <div>
             {chats.map((chat, i) => (
               <div
                 className={`px-3 py-2 rounded ${
@@ -245,7 +326,7 @@ console.log('It works!')
             ))}
           </div>
           <form noValidate onSubmit={handleSubmit}>
-            <div className="flex justify-center items-end px-3 fixed pb-4 lg:pb-5 bottom-0 left-0 right-0 lg:px-0">
+            <div className="flex justify-center items-end px-3 pb-2 pt-2 backdrop-blur-lg fixed bottom-0 left-0 right-0 lg:pb-5 lg:px-0">
               <textarea
                 className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded rounded-r-none"
                 rows={rows}
