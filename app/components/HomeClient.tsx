@@ -20,13 +20,9 @@ import remarkGfm from "remark-gfm";
 import { isWhitelisted } from "../utils/whitelist";
 
 const activeSide =
-  "bg-gray-800 h-screen w-3/4 lg:w-1/4 transform transition-all fixed duration-700 text-white flex flex-row justify-center p-2";
+  "bg-gray-800 h-screen w-3/4 lg:w-1/4 transform transition-all fixed duration-500 text-white flex flex-row justify-center p-2";
 const hiddenSide =
-  "bg-gray-800 h-screen w-3/4 lg:w-1/4 transform transition-all fixed duration-700 text-white flex flex-row justify-center p-2 -translate-x-full";
-const activeButton =
-  "absolute w-10 h-10 bg-yellow-400 top-0 cursor-pointer transition-all transform duration-700 flex items-center justify-center";
-const normalButton =
-  "absolute w-10 h-10 bg-yellow-400 top-0 cursor-pointer transition-all transform duration-700 flex items-center justify-center";
+  "bg-gray-800 h-screen w-3/4 lg:w-1/4 transform transition-all fixed duration-500 text-white flex flex-row justify-center p-2 -translate-x-full";
 
 const Menu = ({
   name,
@@ -41,14 +37,31 @@ const Menu = ({
     signOut(getAuth());
   }, []);
 
+  const closePanel = useCallback(() => {
+    setActive((ac) => !ac);
+
+    setTimeout(() => {
+      const modal = document.querySelector("#modalmenu") as HTMLDivElement;
+      if (modal) {
+        modal.style.display = "none";
+      }
+    }, 500);
+  }, []);
+
   return (
     <div>
       <div
         id="modalmenu"
         className={`w-screen h-screen hidden flex transform fixed left-0 top-0 transition-all duration-1000 z-30`}
+        onClick={(e) => {
+          e.stopPropagation();
+          closePanel();
+        }}
       >
-        <div></div>
-        <div className={active ? activeSide : hiddenSide}>
+        <div
+          className={active ? activeSide : hiddenSide}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="flex w-full h-10 justify-between items-center">
             <div className="mt-10">
               <div className="mt-1 mb-5 flex flex-row justify-between">
@@ -65,18 +78,7 @@ const Menu = ({
             <button
               className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600"
               type="button"
-              onClick={() => {
-                setActive((ac) => !ac);
-
-                setTimeout(() => {
-                  const modal = document.querySelector(
-                    "#modalmenu"
-                  ) as HTMLDivElement;
-                  if (modal) {
-                    modal.style.display = "none";
-                  }
-                }, 1000);
-              }}
+              onClick={closePanel}
             >
               X
             </button>
@@ -326,7 +328,7 @@ console.log('It works!')
             ))}
           </div>
           <form noValidate onSubmit={handleSubmit}>
-            <div className="flex justify-center items-end px-3 pb-2 pt-2 backdrop-blur-lg fixed bottom-0 left-0 right-0 lg:pb-5 lg:px-0">
+            <div className="flex justify-center items-end px-3 pb-3 pt-2 backdrop-blur-lg fixed bottom-0 left-0 right-0 lg:pb-5 lg:px-0">
               <textarea
                 className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded rounded-r-none"
                 rows={rows}
