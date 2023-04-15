@@ -134,8 +134,11 @@ export default function HomeClient() {
     if (!window.confirm("Are you sure to DELETE ALL chats?")) {
       return;
     }
+    conversations.forEach((c) => {
+      localStorage.removeItem(`ngpt-chat-${c.id}`);
+    });
     resetConv();
-  }, [resetConv]);
+  }, [conversations, resetConv]);
 
   return (
     <div className="flex flex-col px-3 lg:px-0 mb-16 lg:mb-36">
