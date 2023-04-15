@@ -108,7 +108,7 @@ const Menu = ({
               </div>
             ))}
           </div>
-          <div className="h-1/6">
+          <div className="h-1/6 mb-10">
             <a
               href="#"
               onClick={onClearChats}
