@@ -48,14 +48,16 @@ const Menu = ({
     <div>
       <div
         id="modalmenu"
-        className={`w-screen h-screen hidden flex transform fixed left-0 top-0 transition-all duration-1000 z-30`}
+        className={`w-screen h-screen hidden flex fixed left-0 top-0 transition-all duration-100 ease-in z-30 ${
+          active ? "bg-gray-900/70" : "bg-gray-500/0"
+        }`}
         onClick={(e) => {
           e.stopPropagation();
           closePanel();
         }}
       >
         <div
-          className={`bg-gray-900 h-screen w-5/6 lg:w-1/4 shadow-lg transform transition-all fixed duration-500 text-white flex flex-col pt-3 px-1 py-1 ${
+          className={`bg-black h-screen w-5/6 lg:w-1/4 shadow-lg transform transition-all fixed duration-500 text-white flex flex-col pt-3 px-1 py-1 ${
             active ? "" : "-translate-x-full"
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -84,8 +86,8 @@ const Menu = ({
             {conversations.map((cv, i) => (
               <div
                 key={cv.id}
-                className={`text-blue-300 flex justify-between items-center cursor-pointer gap-2 px-3 py-2 text-md rounded hover:bg-gray-600 ${
-                  cv.id === currentId ? "bg-gray-700" : ""
+                className={`text-blue-300 border-l-0 text-cyan-50 flex justify-between items-center cursor-pointer gap-2 px-3 py-3 text-md rounded hover:bg-gray-600 ${
+                  cv.id === currentId ? "bg-gray-700 text-cyan-200" : ""
                 }`}
                 onClick={() => {
                   onSelectMessage(cv.id);
@@ -108,11 +110,11 @@ const Menu = ({
               </div>
             ))}
           </div>
-          <div className="h-1/6 mb-10">
+          <div className="min-h-1/6 mb-10 border-t border-gray-600 py-2">
             <a
               href="#"
               onClick={onClearChats}
-              className="text-blue-300 flex items-center px-3 py-2 text-md rounded hover:underline hover:bg-gray-700"
+              className="text-blue-300 flex items-center px-3 py-3 text-md rounded hover:bg-gray-700"
             >
               <FaTrashAlt className="mr-2" />
               Clear chats
@@ -120,7 +122,7 @@ const Menu = ({
             <a
               href="#"
               onClick={logout}
-              className="text-blue-300 flex items-center px-3 py-2 text-md rounded hover:underline hover:bg-gray-700"
+              className="text-blue-300 flex items-center px-3 py-3 text-md rounded hover:bg-gray-700"
             >
               <FaSignOutAlt className="mr-2" />
               Logout

@@ -9,6 +9,7 @@ import { isWhitelisted } from "../utils/whitelist";
 import type { Chat, Conversation } from "../type";
 import Menu from "./Menu";
 import HomeChat from "./HomeChat";
+import { FaPlus } from "react-icons/fa";
 
 export default function HomeClient() {
   const [prompt, setPrompt] = useState("");
@@ -80,11 +81,11 @@ export default function HomeClient() {
     const newUUID = generateUUID();
     setConversations((cv) => {
       return [
-        ...cv,
         {
           id: newUUID,
           name: `New Chat ${cv.length + 1}`,
         },
+        ...cv,
       ];
     });
     setConvId(newUUID);
@@ -92,6 +93,9 @@ export default function HomeClient() {
 
   const handleDelChat = useCallback(
     (deletedId: string) => {
+      if (!window.confirm("Are you sure to DELETE this chat?")) {
+        return;
+      }
       setConversations((cv) => {
         let newConv = cv.filter((c) => c.id !== deletedId);
         if (newConv.length && newConv[newConv.length - 1].id !== convId) {
@@ -163,6 +167,15 @@ export default function HomeClient() {
         <h1 className="grow font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
           NextGPT
         </h1>
+        <div
+          onClick={handleNewChat}
+          className="text-blue-300 flex justify-between items-center cursor-pointer gap-2 px-3 py-2 text-md border border-gray-500 rounded hover:bg-gray-700"
+        >
+          <FaPlus />
+          <span className="truncate hidden lg:inline-block overflow-hidden grow text-ellipsis select-none">
+            New chat
+          </span>
+        </div>
       </div>
       <Menu
         name={authUser?.displayName || "Guest"}

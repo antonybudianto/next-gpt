@@ -23,7 +23,31 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@300&display=swap"
+          rel="stylesheet"
+          // @ts-ignore
+          precedence="default"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@700&display=swap"
+          rel="stylesheet"
+        ></link>
+      </head>
+      <body
+        style={{
+          fontFamily: "Nunito, Arial",
+        }}
+      >
+        {children}
+      </body>
     </html>
   );
 }
