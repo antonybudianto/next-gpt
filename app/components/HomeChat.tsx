@@ -1,0 +1,243 @@
+import {
+  ChangeEvent,
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+import type { Chat } from "../type";
+import { encode } from "@nem035/gpt-3-encoder";
+import { getAuth } from "firebase/auth";
+import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import remarkGfm from "remark-gfm";
+
+const MAX_TOKEN = 4096;
+
+interface HomeChatProps {
+  convId: string;
+  convChats: Chat[];
+  prompt: string;
+  loading: boolean;
+  setPrompt: (str: string) => void;
+  setLoading: (bool: boolean) => void;
+  onSubmit: (prompt: string) => void;
+  onDone: (chats: Chat[]) => void;
+}
+
+export default function HomeChat({
+  convId,
+  convChats,
+  prompt,
+  loading,
+  setPrompt,
+  setLoading,
+  onSubmit,
+  onDone,
+}: HomeChatProps) {
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [rows, setRows] = useState(1);
+
+  useEffect(() => {
+    setChats([...convChats]);
+  }, [convChats]);
+
+  const generate = useCallback(
+    async (promptText: string) => {
+      setLoading(true);
+      setChats((_chats) => {
+        return [
+          ..._chats,
+          { user: "user", prompt: prompt },
+          { user: "bot", prompt: "..." },
+        ];
+      });
+
+      /**
+       * To give context to the API
+       */
+      const assistances = chats.map((_chat) => {
+        return {
+          role: _chat.user === "bot" ? "assistant" : "user",
+          content: _chat.prompt,
+        };
+      });
+      let payload = [
+        ...assistances,
+        {
+          role: "user",
+          content: promptText,
+        },
+      ];
+
+      let tokenOk = false;
+      let finalPayload = [];
+
+      let tokenCount = 0;
+      for (let i = payload.length - 1; i >= 0; i--) {
+        tokenCount += encode(payload[i].content).length;
+        tokenOk = tokenCount < MAX_TOKEN;
+        if (tokenOk) {
+          finalPayload.push(payload[i]);
+        } else {
+          console.warn("Token limit reached: ", tokenCount);
+          break;
+        }
+      }
+      finalPayload.reverse();
+
+      const idToken = (await getAuth().currentUser?.getIdToken()) || "";
+
+      try {
+        const response = await fetch("/api/gpt", {
+          method: "POST",
+          headers: {
+            "X-Idtoken": idToken,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt: finalPayload,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+
+        // This data is a ReadableStream
+        const data = response.body;
+        if (!data) {
+          return;
+        }
+
+        const reader = data.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          const chunkValue = decoder.decode(value);
+
+          setChats((_chats) => {
+            let lastChat = { ..._chats[_chats.length - 1] };
+            if (lastChat.prompt === "...") {
+              lastChat.prompt = "";
+            }
+            lastChat.prompt += chunkValue;
+            const _finalChats = [
+              ..._chats.slice(0, _chats.length - 1),
+              lastChat,
+            ];
+            if (done) {
+              onDone(_finalChats);
+            }
+            return _finalChats;
+          });
+          window.scrollTo(0, document.body.scrollHeight);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [chats, prompt, onDone, setLoading]
+  );
+
+  const handleSubmit = useCallback(
+    (e: ChangeEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      onSubmit(prompt);
+      generate(prompt);
+      setPrompt("");
+    },
+    [prompt, generate, onSubmit, setPrompt]
+  );
+  const handleChange = useCallback(
+    (e: any) => {
+      setPrompt(e.target.value);
+      let numberOfLineBreaks = (e.target.value.match(/\n/g) || []).length;
+      setRows(numberOfLineBreaks || 1);
+    },
+    [setPrompt]
+  );
+
+  const handleKey = useCallback(
+    (evt: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (evt.key === "Enter" && !evt.shiftKey) {
+        evt.preventDefault();
+        onSubmit(prompt);
+        generate(prompt);
+        setPrompt("");
+      }
+    },
+    [prompt, generate, onSubmit, setPrompt]
+  );
+
+  return (
+    <>
+      <div>
+        {chats.map((chat, i) => (
+          <div
+            className={`overflow-auto px-3 py-2 rounded ${
+              chat.user === "bot"
+                ? "bg-gray-800 text-gray-300 mt-0"
+                : "bg-gray-900 mt-3"
+            }`}
+            key={i}
+          >
+            {/* eslint-disable */}
+            <ReactMarkdown
+              children={chat.prompt}
+              remarkPlugins={[remarkGfm]}
+              components={{
+                code({ node, inline, className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || "");
+                  return !inline && match ? (
+                    <SyntaxHighlighter
+                      children={String(children).replace(/\n$/, "")}
+                      // @ts-ignore
+                      style={dracula}
+                      language={match[1]}
+                      PreTag="div"
+                      {...props}
+                    />
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+              }}
+            />
+          </div>
+        ))}
+      </div>
+      <form noValidate onSubmit={handleSubmit}>
+        <div className="flex justify-center items-end px-3 pb-3 pt-2 backdrop-blur-lg fixed bottom-0 left-0 right-0 lg:pb-5 lg:px-0">
+          <textarea
+            className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded rounded-r-none"
+            rows={rows}
+            style={{
+              maxHeight: "200px",
+              resize: "none",
+            }}
+            placeholder="Input your prompt"
+            onChange={handleChange}
+            onKeyDown={handleKey}
+            value={prompt}
+            disabled={loading}
+          ></textarea>
+          <button
+            type="submit"
+            className="px-5 h-12 py-0 bg-gray-800 font-bold rounded rounded-l-none text-gray-100 text-2xl hover:bg-gray-600 disabled:bg-gray-500"
+            disabled={loading || !prompt}
+          >
+            {">"}
+          </button>
+        </div>
+      </form>
+    </>
+  );
+}

@@ -1,109 +1,37 @@
 "use client";
 
+import { generate as generateUUID } from "short-uuid";
 import "@/app/utils/initFirebase";
-import { encode } from "@nem035/gpt-3-encoder";
-import { UserInfo, getAuth, signOut } from "firebase/auth";
-import React, {
-  ChangeEvent,
-  Dispatch,
-  KeyboardEvent,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { UserInfo, getAuth } from "firebase/auth";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import remarkGfm from "remark-gfm";
 import { isWhitelisted } from "../utils/whitelist";
-
-const activeSide =
-  "bg-gray-800 h-screen w-3/4 lg:w-1/4 transform transition-all fixed duration-500 text-white flex flex-row justify-center p-2";
-const hiddenSide =
-  "bg-gray-800 h-screen w-3/4 lg:w-1/4 transform transition-all fixed duration-500 text-white flex flex-row justify-center p-2 -translate-x-full";
-
-const Menu = ({
-  name,
-  active,
-  setActive,
-}: {
-  name: string;
-  active: boolean;
-  setActive: Dispatch<SetStateAction<boolean>>;
-}) => {
-  const logout = useCallback(() => {
-    signOut(getAuth());
-  }, []);
-
-  const closePanel = useCallback(() => {
-    setActive((ac) => !ac);
-
-    setTimeout(() => {
-      const modal = document.querySelector("#modalmenu") as HTMLDivElement;
-      if (modal) {
-        modal.style.display = "none";
-      }
-    }, 500);
-  }, []);
-
-  return (
-    <div>
-      <div
-        id="modalmenu"
-        className={`w-screen h-screen hidden flex transform fixed left-0 top-0 transition-all duration-1000 z-30`}
-        onClick={(e) => {
-          e.stopPropagation();
-          closePanel();
-        }}
-      >
-        <div
-          className={active ? activeSide : hiddenSide}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex w-full h-10 justify-between items-center">
-            <div className="mt-10">
-              <div className="mt-1 mb-5 flex flex-row justify-between">
-                <div>Welcome, {name}</div>
-              </div>
-              <a
-                href="#"
-                onClick={logout}
-                className="text-blue-300 hover:underline text-sm"
-              >
-                Logout
-              </a>
-            </div>
-            <button
-              className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600"
-              type="button"
-              onClick={closePanel}
-            >
-              X
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-interface Chat {
-  user: string;
-  prompt: string;
-}
-
-const MAX_TOKEN = 4096;
+import type { Chat, Conversation } from "../type";
+import Menu from "./Menu";
+import HomeChat from "./HomeChat";
 
 export default function HomeClient() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [authUser, setAuthUser] = useState<UserInfo | null>();
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [rows, setRows] = useState(1);
   const [active, setActive] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [convId, setConvId] = useState("");
+  const lsRef = useRef(false);
+
+  const resetConv = useCallback(() => {
+    const uuid = generateUUID();
+    setConversations([
+      {
+        id: uuid,
+        name: "New Chat 1",
+      },
+    ]);
+    setConvId(uuid);
+    setChats([]);
+  }, []);
 
   useEffect(() => {
     const auth = getAuth();
@@ -115,136 +43,99 @@ export default function HomeClient() {
         window.location.replace("/login");
       }
     });
-  }, []);
 
-  const generate = useCallback(
-    async (promptText: string) => {
-      setLoading(true);
-      setChats((_chats) => {
-        return [
-          ..._chats,
-          { user: "user", prompt: prompt },
-          { user: "bot", prompt: "..." },
-        ];
-      });
+    const chatKeysStr = localStorage.getItem("ngpt-chat-keys") || "[]";
+    const chatKeys = JSON.parse(chatKeysStr);
+    if (!chatKeys.length) {
+      resetConv();
+    } else {
+      setConversations(chatKeys);
+      setConvId(chatKeys[chatKeys.length - 1].id);
+    }
+  }, [resetConv]);
 
-      /**
-       * To give context to the API
-       */
-      const assistances = chats.map((_chat) => {
-        return {
-          role: _chat.user === "bot" ? "assistant" : "user",
-          content: _chat.prompt,
-        };
-      });
-      let payload = [
-        ...assistances,
+  useEffect(() => {
+    if (!conversations.length) {
+      resetConv();
+      return;
+    }
+    if (!lsRef.current) {
+      lsRef.current = true;
+      return;
+    }
+    localStorage.setItem("ngpt-chat-keys", JSON.stringify(conversations));
+  }, [conversations, resetConv]);
+
+  useEffect(() => {
+    if (!convId) {
+      setChats([]);
+      return;
+    }
+    const _chatsStr = localStorage.getItem(`ngpt-chat-${convId}`) || "[]";
+    const _chats = JSON.parse(_chatsStr);
+    setChats(_chats);
+  }, [convId]);
+
+  const handleNewChat = useCallback(() => {
+    const newUUID = generateUUID();
+    setConversations((cv) => {
+      return [
+        ...cv,
         {
-          role: "user",
-          content: promptText,
+          id: newUUID,
+          name: `New Chat ${cv.length + 1}`,
         },
       ];
+    });
+    setConvId(newUUID);
+  }, [setConversations]);
 
-      let tokenOk = false;
-      let finalPayload = [];
-
-      let tokenCount = 0;
-      for (let i = payload.length - 1; i >= 0; i--) {
-        tokenCount += encode(payload[i].content).length;
-        tokenOk = tokenCount < MAX_TOKEN;
-        if (tokenOk) {
-          finalPayload.push(payload[i]);
+  const handleDelChat = useCallback(
+    (deletedId: string) => {
+      setConversations((cv) => {
+        let newConv = cv.filter((c) => c.id !== deletedId);
+        if (newConv.length && newConv[newConv.length - 1].id !== convId) {
+          setConvId(newConv[newConv.length - 1].id);
         } else {
-          console.warn("Token limit reached: ", tokenCount);
-          break;
+          setConvId("");
         }
-      }
-      finalPayload.reverse();
-
-      const idToken = (await getAuth().currentUser?.getIdToken()) || "";
-
-      try {
-        const response = await fetch("/api/gpt", {
-          method: "POST",
-          headers: {
-            "X-Idtoken": idToken,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prompt: finalPayload,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(response.statusText);
-        }
-
-        // This data is a ReadableStream
-        const data = response.body;
-        if (!data) {
-          return;
-        }
-
-        const reader = data.getReader();
-        const decoder = new TextDecoder();
-        let done = false;
-
-        while (!done) {
-          const { value, done: doneReading } = await reader.read();
-          done = doneReading;
-          const chunkValue = decoder.decode(value);
-
-          setChats((_chats) => {
-            let lastChat = { ..._chats[_chats.length - 1] };
-            if (lastChat.prompt === "...") {
-              lastChat.prompt = "";
-            }
-            lastChat.prompt += chunkValue;
-            return [..._chats.slice(0, _chats.length - 1), lastChat];
-          });
-          window.scrollTo(0, document.body.scrollHeight);
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+        return newConv;
+      });
+      localStorage.removeItem(`ngpt-chat-${convId}`);
     },
-    [chats, prompt]
+    [convId]
   );
 
-  const handleChange = useCallback((e: any) => {
-    setPrompt(e.target.value);
-    let numberOfLineBreaks = (e.target.value.match(/\n/g) || []).length;
-    setRows(numberOfLineBreaks || 1);
+  const handleSelectChat = useCallback((id: string) => {
+    setConvId(id);
   }, []);
 
-  const handleSubmit = useCallback(
-    (e: ChangeEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      generate(prompt);
-      setPrompt("");
+  const handleDone = useCallback(
+    (_chats: Chat[]) => {
+      localStorage.setItem(`ngpt-chat-${convId}`, JSON.stringify(_chats));
     },
-    [prompt, generate]
+    [convId]
   );
 
-  const handleKey = useCallback(
-    (evt: KeyboardEvent<HTMLTextAreaElement>) => {
-      if (evt.key === "Enter" && !evt.shiftKey) {
-        evt.preventDefault();
-        generate(prompt);
-        setPrompt("");
+  const handleSubmit = useCallback(
+    (prompt: string) => {
+      const tmpConvs = [...conversations];
+      const idx = tmpConvs.findIndex((c) => c.id === convId);
+
+      if (tmpConvs[idx].name.indexOf("New Chat") !== -1) {
+        tmpConvs[idx].name = prompt;
+        setConversations(tmpConvs);
       }
     },
-    [prompt, generate]
+    [conversations, convId]
   );
 
-  const markdown = `Here is some JavaScript code:
-
-~~~js
-console.log('It works!')
-~~~
-`;
+  const handleClearChat = useCallback(() => {
+    if (!window.confirm("Are you sure to DELETE ALL chats?")) {
+      return;
+    }
+    resetConv();
+  }, [resetConv]);
 
   return (
     <div className="flex flex-col px-3 lg:px-0 mb-16 lg:mb-36">
@@ -266,14 +157,20 @@ console.log('It works!')
           {" "}
           &#9776;
         </div>
-        <h1 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-green-600">
+        <h1 className="grow font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
           NextGPT
         </h1>
       </div>
       <Menu
         name={authUser?.displayName || "Guest"}
+        currentId={convId}
         active={active}
+        conversations={conversations}
         setActive={setActive}
+        onDeleteMessage={handleDelChat}
+        onSelectMessage={handleSelectChat}
+        onNewChat={handleNewChat}
+        onClearChats={handleClearChat}
       />
 
       {authLoading ? (
@@ -290,67 +187,16 @@ console.log('It works!')
         </div>
       ) : (
         <>
-          <div>
-            {chats.map((chat, i) => (
-              <div
-                className={`px-3 py-2 rounded ${
-                  chat.user === "bot"
-                    ? "bg-gray-800 text-gray-300 mt-0"
-                    : "bg-gray-900 mt-3"
-                }`}
-                key={i}
-              >
-                {/* eslint-disable */}
-                <ReactMarkdown
-                  children={chat.prompt}
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    code({ node, inline, className, children, ...props }) {
-                      const match = /language-(\w+)/.exec(className || "");
-                      return !inline && match ? (
-                        <SyntaxHighlighter
-                          children={String(children).replace(/\n$/, "")}
-                          // @ts-ignore
-                          style={dracula}
-                          language={match[1]}
-                          PreTag="div"
-                          {...props}
-                        />
-                      ) : (
-                        <code className={className} {...props}>
-                          {children}
-                        </code>
-                      );
-                    },
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-          <form noValidate onSubmit={handleSubmit}>
-            <div className="flex justify-center items-end px-3 pb-3 pt-2 backdrop-blur-lg fixed bottom-0 left-0 right-0 lg:pb-5 lg:px-0">
-              <textarea
-                className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded rounded-r-none"
-                rows={rows}
-                style={{
-                  maxHeight: "200px",
-                  resize: "none",
-                }}
-                placeholder="Input your prompt"
-                onChange={handleChange}
-                onKeyDown={handleKey}
-                value={prompt}
-                disabled={loading}
-              ></textarea>
-              <button
-                type="submit"
-                className="px-5 h-12 py-0 bg-gray-800 font-bold rounded rounded-l-none text-gray-100 text-2xl hover:bg-gray-600 disabled:bg-gray-500"
-                disabled={loading || !prompt}
-              >
-                {">"}
-              </button>
-            </div>
-          </form>
+          <HomeChat
+            convId={convId}
+            convChats={chats}
+            loading={loading}
+            setLoading={setLoading}
+            prompt={prompt}
+            setPrompt={setPrompt}
+            onDone={handleDone}
+            onSubmit={handleSubmit}
+          />
         </>
       )}
     </div>

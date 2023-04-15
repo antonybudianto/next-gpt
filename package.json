@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "react-icons": "4.8.0",
+    "short-uuid": "4.2.2",
     "@nem035/gpt-3-encoder": "1.1.7",
     "@types/node": "18.15.10",
     "@types/react": "18.0.29",
