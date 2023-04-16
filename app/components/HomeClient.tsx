@@ -51,17 +51,17 @@ export default function HomeClient() {
       resetConv();
     } else {
       setConversations(chatKeys);
-      setConvId(chatKeys[chatKeys.length - 1].id);
+      setConvId(chatKeys[0].id);
     }
   }, [resetConv]);
 
   useEffect(() => {
-    if (!conversations.length) {
-      resetConv();
-      return;
-    }
     if (!lsRef.current) {
       lsRef.current = true;
+      return;
+    }
+    if (!conversations.length) {
+      resetConv();
       return;
     }
     localStorage.setItem("ngpt-chat-keys", JSON.stringify(conversations));
