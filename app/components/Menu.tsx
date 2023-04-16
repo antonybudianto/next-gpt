@@ -57,7 +57,7 @@ const Menu = ({
         }}
       >
         <div
-          className={`bg-black h-screen w-5/6 lg:w-1/4 shadow-lg transform transition-all fixed duration-500 text-white flex flex-col pt-3 px-1 py-1 ${
+          className={`bg-black h-screen w-5/6 lg:w-1/4 shadow-lg transform transition-all fixed duration-500 text-white flex flex-col pt-3 px-3 py-1 ${
             active ? "" : "-translate-x-full"
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -86,7 +86,7 @@ const Menu = ({
             {conversations.map((cv, i) => (
               <div
                 key={cv.id}
-                className={`text-blue-300 border-l-0 text-cyan-50 flex justify-between items-center cursor-pointer gap-2 px-3 py-3 text-md rounded hover:bg-gray-600 ${
+                className={`text-blue-300 border-l-0 text-cyan-50 flex justify-between items-center cursor-pointer gap-2 mb-1 px-3 py-3 text-md rounded hover:bg-gray-600 ${
                   cv.id === currentId ? "bg-gray-700 text-cyan-200" : ""
                 }`}
                 onClick={() => {
