@@ -110,7 +110,7 @@ const Menu = ({
               </div>
             ))}
           </div>
-          <div className="min-h-1/6 mb-10 border-t border-gray-600 py-2">
+          <div className="min-h-1/6 mb-12 border-t border-gray-600 py-2">
             <a
               href="#"
               onClick={onClearChats}

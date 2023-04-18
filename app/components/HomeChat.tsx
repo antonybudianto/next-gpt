@@ -11,7 +11,7 @@ import { getAuth } from "firebase/auth";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
-import { FaInbox, FaRobot } from "react-icons/fa";
+import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 const MAX_TOKEN = 4096;
 
