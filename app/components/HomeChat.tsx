@@ -178,7 +178,7 @@ export default function HomeChat({
 
   return (
     <>
-      <div>
+      <div className="mb-5">
         {chats.map((chat, i) => (
           <div
             className={`overflow-auto px-3 py-2 rounded ${
