@@ -105,7 +105,7 @@ export default function HomeClient() {
         }
         return newConv;
       });
-      localStorage.removeItem(`ngpt-chat-${convId}`);
+      localStorage.removeItem(`ngpt-chat-${deletedId}`);
     },
     [convId]
   );
