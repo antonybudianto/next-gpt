@@ -200,7 +200,8 @@ export default function HomeChat({
           >
             {!(loading && i === chats.length - 1) &&
             chat.user === "bot" &&
-            /reply with markdown format/i.test(chats[i - 1].prompt) ? (
+            chat.prompt.indexOf("```") !== -1 &&
+            /reply with markdown format/i.test(chats[0].prompt) ? (
               <>
                 <iframe
                   src={`https://codesandbox.io/embed/tailwind-preview-ghzd6l?autoresize=1&fontsize=14&codemirror=1&hidenavigation=1&theme=dark&view=preview&initialpath=/?hx=${(
