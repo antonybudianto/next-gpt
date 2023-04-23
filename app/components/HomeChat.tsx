@@ -12,6 +12,7 @@ import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { FaRegComment } from "react-icons/fa";
 
 const MAX_TOKEN = 4096;
 
@@ -232,10 +233,11 @@ export default function HomeChat({
           ></textarea>
           <button
             type="submit"
+            title="Send chat"
             className="px-5 h-12 py-0 bg-gray-800 font-bold rounded rounded-l-none text-gray-100 text-2xl hover:bg-gray-600 disabled:bg-gray-500"
             disabled={loading || !prompt}
           >
-            {">"}
+            <FaRegComment />
           </button>
         </div>
       </form>

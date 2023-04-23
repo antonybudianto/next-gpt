@@ -93,7 +93,9 @@ const Menu = ({
                   onSelectMessage(cv.id);
                 }}
               >
-                <FaInbox />
+                <div>
+                  <FaInbox />
+                </div>
                 <span className="truncate overflow-hidden grow text-ellipsis select-none">
                   {cv.name}
                 </span>
