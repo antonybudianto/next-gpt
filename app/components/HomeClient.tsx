@@ -191,7 +191,7 @@ export default function HomeClient() {
 
       {authLoading ? (
         <div className="mt-1">
-          <div className="max-w-sm w-full">
+          <div className="w-full">
             <div className="animate-pulse flex space-x-4">
               <div className="flex-1 space-y-6 py-1">
                 <div className="space-y-3">

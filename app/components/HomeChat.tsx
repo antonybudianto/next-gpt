@@ -13,7 +13,7 @@ import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { FaRegComment, FaStop, FaStopCircle } from "react-icons/fa";
+import { FaInfoCircle, FaRegComment, FaStopCircle } from "react-icons/fa";
 
 const MAX_TOKEN = 4096;
 
@@ -198,30 +198,58 @@ export default function HomeChat({
             }`}
             key={i}
           >
-            {/* eslint-disable */}
-            <ReactMarkdown
-              children={chat.prompt}
-              remarkPlugins={[remarkGfm]}
-              components={{
-                code({ node, inline, className, children, ...props }) {
-                  const match = /language-(\w+)/.exec(className || "");
-                  return !inline && match ? (
-                    <SyntaxHighlighter
-                      children={String(children).replace(/\n$/, "")}
-                      // @ts-ignore
-                      style={dracula}
-                      language={match[1]}
-                      PreTag="div"
-                      {...props}
-                    />
-                  ) : (
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
-                  );
-                },
-              }}
-            />
+            {!(loading && i === chats.length - 1) &&
+            chat.user === "bot" &&
+            /reply with markdown format/i.test(chats[i - 1].prompt) ? (
+              <>
+                <iframe
+                  src={`https://codesandbox.io/embed/tailwind-preview-ghzd6l?autoresize=1&fontsize=14&codemirror=1&hidenavigation=1&theme=dark&view=preview&initialpath=/?hx=${(
+                    chat.prompt.match(/`{3}([^`]*)`{3}/g) || []
+                  )
+                    .map((s) =>
+                      s.replace(/```/g, "").replace(/^(html|markdown)/, "")
+                    )
+                    .join("")
+                    .replace(/\n/g, "")}`}
+                  style={{
+                    width: "100%",
+                    height: "50vh",
+                  }}
+                  className="rounded w-full overflow-none rounded-md"
+                  title="tailwind-preview"
+                  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+                  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+                ></iframe>
+                <div className="flex items-center px-3 py-2 rounded bg-cyan-900 border-cyan-50 border-1">
+                  <FaInfoCircle />{" "}
+                  <span className="ml-2">Code Preview is still in Beta</span>
+                </div>
+              </>
+            ) : (
+              <ReactMarkdown
+                children={chat.prompt}
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code({ node, inline, className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || "");
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        children={String(children).replace(/\n$/, "")}
+                        // @ts-ignore
+                        style={dracula}
+                        language={match[1]}
+                        PreTag="div"
+                        {...props}
+                      />
+                    ) : (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                }}
+              />
+            )}
           </div>
         ))}
       </div>
