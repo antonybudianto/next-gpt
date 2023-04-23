@@ -3,6 +3,7 @@ import {
   KeyboardEvent,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { Chat } from "../type";
@@ -12,7 +13,7 @@ import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { FaRegComment } from "react-icons/fa";
+import { FaRegComment, FaStop, FaStopCircle } from "react-icons/fa";
 
 const MAX_TOKEN = 4096;
 
@@ -39,6 +40,7 @@ export default function HomeChat({
 }: HomeChatProps) {
   const [chats, setChats] = useState<Chat[]>([]);
   const [rows, setRows] = useState(1);
+  const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array>>();
 
   useEffect(() => {
     setChats([...convChats]);
@@ -115,6 +117,7 @@ export default function HomeChat({
         const reader = data.getReader();
         const decoder = new TextDecoder();
         let done = false;
+        readerRef.current = reader;
 
         while (!done) {
           const { value, done: doneReading } = await reader.read();
@@ -177,6 +180,12 @@ export default function HomeChat({
     [prompt, generate, onSubmit, setPrompt]
   );
 
+  const handleStop = useCallback(() => {
+    if (readerRef.current) {
+      readerRef.current.cancel();
+    }
+  }, []);
+
   return (
     <>
       <div className="mb-5">
@@ -231,14 +240,25 @@ export default function HomeChat({
             value={prompt}
             disabled={loading}
           ></textarea>
-          <button
-            type="submit"
-            title="Send chat"
-            className="px-5 h-12 py-0 bg-gray-800 font-bold rounded rounded-l-none text-gray-100 text-2xl hover:bg-gray-600 disabled:bg-gray-500"
-            disabled={loading || !prompt}
-          >
-            <FaRegComment />
-          </button>
+          {loading ? (
+            <button
+              type="button"
+              title="Stop generating"
+              className="animate-pulse px-5 h-12 py-0 bg-cyan-800 font-bold rounded rounded-l-none text-gray-100 text-2xl hover:bg-gray-600 disabled:bg-gray-500"
+              onClick={handleStop}
+            >
+              <FaStopCircle />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              title="Send chat"
+              className="px-5 h-12 py-0 bg-gray-800 font-bold rounded rounded-l-none text-gray-100 text-2xl hover:bg-gray-600 disabled:bg-gray-500"
+              disabled={loading || !prompt}
+            >
+              <FaRegComment />
+            </button>
+          )}
         </div>
       </form>
     </>
