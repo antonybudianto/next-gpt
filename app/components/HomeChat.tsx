@@ -204,14 +204,15 @@ export default function HomeChat({
             /reply with markdown format/i.test(chats[0].prompt) ? (
               <>
                 <iframe
-                  src={`https://codesandbox.io/embed/tailwind-preview-ghzd6l?autoresize=1&fontsize=14&codemirror=1&hidenavigation=1&theme=dark&view=preview&initialpath=/?hx=${(
-                    chat.prompt.match(/`{3}([^`]*)`{3}/g) || []
-                  )
-                    .map((s) =>
-                      s.replace(/```/g, "").replace(/^(html|markdown)/, "")
-                    )
-                    .join("")
-                    .replace(/\n/g, "")}`}
+                  src={`https://codesandbox.io/embed/tailwind-preview-ghzd6l?autoresize=1&fontsize=14&codemirror=1&hidenavigation=1&theme=dark&view=preview&initialpath=/?hx=${encodeURIComponent(
+                    (chat.prompt.match(/`{3}([^`]*)`{3}/g) || [])
+                      .map((s) =>
+                        s.replace(/```/g, "").replace(/^(html|markdown)/, "")
+                      )
+                      .join("")
+                      .replace(/\n/g, "")
+                      .replace(/\#/g, "!!") // hash cannot be send over as a query param
+                  )}`}
                   style={{
                     width: "100%",
                     height: "50vh",
