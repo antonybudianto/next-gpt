@@ -72,13 +72,13 @@ export async function POST(req: Request): Promise<Response> {
      * @see https://platform.openai.com/playground?mode=chat
      */
     const payload: OpenAIStreamPayload = {
-      model: "gpt-3.5-turbo",
+      model: "gpt-4-vision-preview",
       messages: prompt,
       temperature: 0.7,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
-      max_tokens: 800,
+      max_tokens: 3200,
       stream: true,
       n: 1,
       user: "guest",
