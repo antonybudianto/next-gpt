@@ -15,7 +15,8 @@ import remarkGfm from "remark-gfm";
 import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { FaInfoCircle, FaRegComment, FaStopCircle } from "react-icons/fa";
 
-const MAX_TOKEN = 4096;
+// https://platform.openai.com/docs/models/gpt-4
+const MAX_TOKEN = 8192;
 
 interface HomeChatProps {
   convId: string;
