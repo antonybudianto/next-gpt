@@ -31,3 +31,7 @@ table thead {
 table td {
   @apply px-2 py-1;
 }
+
+.chat-bubble img {
+  max-height: 320px;
+}

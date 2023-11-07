@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 import {
   ChangeEvent,
   KeyboardEvent,
@@ -7,25 +8,37 @@ import {
   useState,
 } from "react";
 import type { Chat } from "../type";
-import { encode } from "@nem035/gpt-3-encoder";
+import Compressor from "compressorjs";
+
+// import { encode } from "@nem035/gpt-3-encoder";
+
+import { encode } from "gpt-tokenizer";
 import { getAuth } from "firebase/auth";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { FaInfoCircle, FaRegComment, FaStopCircle } from "react-icons/fa";
+import {
+  FaImage,
+  FaInfoCircle,
+  FaRegComment,
+  FaStopCircle,
+} from "react-icons/fa";
 
 // https://platform.openai.com/docs/models/gpt-4
-const MAX_TOKEN = 8192;
+// const MAX_TOKEN = 8192;
+
+// @TODO vision
+const MAX_TOKEN = 128000;
 
 interface HomeChatProps {
   convId: string;
   convChats: Chat[];
-  prompt: string;
+  prompt: string | Array<Record<string, unknown>>;
   loading: boolean;
   setPrompt: (str: string) => void;
   setLoading: (bool: boolean) => void;
-  onSubmit: (prompt: string) => void;
+  onSubmit: (prompt: string | Array<Record<string, unknown>>) => void;
   onDone: (chats: Chat[]) => void;
 }
 
@@ -42,18 +55,34 @@ export default function HomeChat({
   const [chats, setChats] = useState<Chat[]>([]);
   const [rows, setRows] = useState(1);
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array>>();
+  const [img, setImg] = useState("");
 
   useEffect(() => {
     setChats([...convChats]);
   }, [convChats]);
 
   const generate = useCallback(
-    async (promptText: string) => {
+    async (promptText: string | Array<Record<string, unknown>>) => {
+      const finalContent = !img
+        ? promptText
+        : [
+            {
+              type: "text",
+              text: promptText,
+            },
+            {
+              type: "image_url",
+              image_url: img,
+            },
+          ];
       setLoading(true);
+      if (img) {
+        setImg("");
+      }
       setChats((_chats) => {
         return [
           ..._chats,
-          { user: "user", prompt: prompt },
+          { user: "user", prompt: finalContent as string },
           { user: "bot", prompt: "..." },
         ];
       });
@@ -67,11 +96,12 @@ export default function HomeChat({
           content: _chat.prompt,
         };
       });
+
       let payload = [
         ...assistances,
         {
           role: "user",
-          content: promptText,
+          content: finalContent,
         },
       ];
 
@@ -80,12 +110,20 @@ export default function HomeChat({
 
       let tokenCount = 0;
       for (let i = payload.length - 1; i >= 0; i--) {
-        tokenCount += encode(payload[i].content).length;
+        // @ts-ignore
+        tokenCount += encode(
+          // @ts-ignore
+          typeof payload[i].content === "string"
+            ? payload[i].content
+            : JSON.stringify(payload[i].content)
+        ).length;
         tokenOk = tokenCount < MAX_TOKEN;
+        console.log(tokenCount);
         if (tokenOk) {
           finalPayload.push(payload[i]);
         } else {
           console.warn("Token limit reached: ", tokenCount);
+          finalPayload.push(payload[i]);
           break;
         }
       }
@@ -148,7 +186,7 @@ export default function HomeChat({
         setLoading(false);
       }
     },
-    [chats, prompt, onDone, setLoading]
+    [chats, onDone, setLoading, img]
   );
 
   const handleSubmit = useCallback(
@@ -187,12 +225,44 @@ export default function HomeChat({
     }
   }, []);
 
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    var reader = new FileReader();
+    const file = (e.target?.files || [])[0];
+
+    if (!file) {
+      return;
+    }
+
+    new Compressor(file, {
+      quality: 0.6,
+      maxWidth: 720,
+      maxHeight: 480,
+      convertSize: 500000,
+      convertTypes: "image/png,image/webp",
+
+      success(_file) {
+        reader.readAsDataURL(_file);
+        reader.onload = function () {
+          setImg(reader.result as string);
+        };
+        reader.onerror = function (error) {
+          console.log("Error: ", error);
+        };
+      },
+      error(err) {
+        console.log(err.message);
+      },
+    });
+  }, []);
+
   return (
     <>
       <div className="mb-5">
         {chats.map((chat, i) => (
           <div
-            className={`overflow-auto px-3 py-2 rounded ${
+            className={`chat-bubble overflow-auto px-3 py-2 rounded ${
               chat.user === "bot"
                 ? "bg-gray-800 text-gray-300 mt-0"
                 : "bg-gray-900 mt-3"
@@ -230,7 +300,17 @@ export default function HomeChat({
               </>
             ) : (
               <ReactMarkdown
-                children={chat.prompt}
+                children={
+                  typeof chat.prompt === "object"
+                    ? // @ts-expect-error
+                      `${chat.prompt[0].text as string}
+                    ![Image](${
+                      // @ts-expect-error
+                      chat.prompt[1].image_url as string
+                    })
+                    `
+                    : chat.prompt
+                }
                 remarkPlugins={[remarkGfm]}
                 components={{
                   code({ node, inline, className, children, ...props }) {
@@ -258,8 +338,25 @@ export default function HomeChat({
       </div>
       <form noValidate onSubmit={handleSubmit}>
         <div className="flex justify-center items-end px-3 pb-3 pt-2 backdrop-blur-lg fixed bottom-0 left-0 right-0 lg:pb-5 lg:px-0">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/png, image/gif, image/jpeg, image/jpg"
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+          />
+          <button
+            type="button"
+            title="Send chat"
+            onClick={() => {
+              fileRef.current?.click();
+            }}
+            className="px-5 h-12 py-0 bg-gray-800 font-bold rounded rounded-r-none text-gray-100 text-2xl hover:bg-gray-600 disabled:bg-gray-500"
+          >
+            {img ? <img src={img} width={50} height={50} /> : <FaImage />}
+          </button>
           <textarea
-            className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 rounded rounded-r-none"
+            className="px-4 py-3 bg-gray-700 text-gray-50 w-full lg:w-2/4 "
             rows={rows}
             style={{
               maxHeight: "200px",
@@ -268,7 +365,7 @@ export default function HomeChat({
             placeholder="Input your prompt"
             onChange={handleChange}
             onKeyDown={handleKey}
-            value={prompt}
+            value={prompt as string}
             disabled={loading}
           ></textarea>
           {loading ? (

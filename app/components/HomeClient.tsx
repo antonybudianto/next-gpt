@@ -122,12 +122,13 @@ export default function HomeClient() {
   );
 
   const handleSubmit = useCallback(
-    (prompt: string) => {
+    (prompt: string | Record<string, unknown>[]) => {
       const tmpConvs = [...conversations];
       const idx = tmpConvs.findIndex((c) => c.id === convId);
 
       if (tmpConvs[idx].name.indexOf("New Chat") !== -1) {
-        tmpConvs[idx].name = prompt;
+        tmpConvs[idx].name =
+          typeof prompt === "object" ? (prompt[0].text as string) : prompt;
         setConversations(tmpConvs);
       }
     },
