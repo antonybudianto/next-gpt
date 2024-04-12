@@ -15,9 +15,6 @@ const config: FirebaseOptions = {
 };
 
 function createFirebaseApp(config: FirebaseOptions) {
-  if (typeof window === "undefined") {
-    return null;
-  }
   try {
     return getApp();
   } catch {
