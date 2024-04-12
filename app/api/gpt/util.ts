@@ -1,6 +1,6 @@
 import { getFirebaseAuth } from "next-firebase-auth-edge/lib/auth";
 
-const WHITELISTED_EMAIL = ["antonybudianto@gmail.com"];
+const WHITELISTED_EMAIL = ["antonybudianto@gmail.com", "huangg.helen@gmail.com"];
 
 export async function verifyToken(token: string) {
   const FBSA_KEY = process.env.FIREBASE_ADMIN_PKEY || "";
