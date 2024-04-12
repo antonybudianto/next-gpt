@@ -25,10 +25,8 @@ import {
   FaStopCircle,
 } from "react-icons/fa";
 
-// https://platform.openai.com/docs/models/gpt-4
-// const MAX_TOKEN = 8192;
-
 // @TODO vision
+// https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4
 const MAX_TOKEN = 128000;
 
 interface HomeChatProps {
@@ -42,7 +40,7 @@ interface HomeChatProps {
   onDone: (chats: Chat[]) => void;
 }
 
-export default function HomeChat({
+const HomeChat = ({
   convId,
   convChats,
   prompt,
@@ -51,7 +49,7 @@ export default function HomeChat({
   setLoading,
   onSubmit,
   onDone,
-}: HomeChatProps) {
+}: HomeChatProps) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [rows, setRows] = useState(1);
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array>>();
@@ -72,7 +70,7 @@ export default function HomeChat({
             },
             {
               type: "image_url",
-              image_url: img,
+              image_url: {url: img},
             },
           ];
       setLoading(true);
@@ -118,7 +116,6 @@ export default function HomeChat({
             : JSON.stringify(payload[i].content)
         ).length;
         tokenOk = tokenCount < MAX_TOKEN;
-        console.log(tokenCount);
         if (tokenOk) {
           finalPayload.push(payload[i]);
         } else {
@@ -306,7 +303,7 @@ export default function HomeChat({
                       `${chat.prompt[0].text as string}
                     ![Image](${
                       // @ts-expect-error
-                      chat.prompt[1].image_url as string
+                      chat.prompt[1].image_url.url as string
                     })
                     `
                     : chat.prompt
@@ -392,3 +389,5 @@ export default function HomeChat({
     </>
   );
 }
+
+export default HomeChat

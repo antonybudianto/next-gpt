@@ -43,6 +43,9 @@ export async function OpenAIStream(payload: OpenAIStreamPayload) {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  if (res.status > 201) {
+    console.error('err fetch', res.status, res.statusText)
+  }
 
   const stream = new ReadableStream({
     async start(controller) {

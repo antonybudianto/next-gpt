@@ -11,7 +11,7 @@ import Menu from "./Menu";
 import HomeChat from "./HomeChat";
 import { FaPlus } from "react-icons/fa";
 
-export default function HomeClient() {
+const HomeClient = () => {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
@@ -35,8 +35,10 @@ export default function HomeClient() {
   }, []);
 
   useEffect(() => {
+    console.log('checking..')
     const auth = getAuth();
     auth.onAuthStateChanged((user) => {
+      console.log('>>',user)
       if (user && user.emailVerified && isWhitelisted(user.email || "")) {
         setAuthUser(user);
         setAuthLoading(false);
@@ -219,3 +221,5 @@ export default function HomeClient() {
     </div>
   );
 }
+
+export default HomeClient

@@ -16,11 +16,11 @@ export const metadata = {
   themeColor: "#000000",
 };
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}) => {
   return (
     <html lang="en">
       <head>
@@ -51,3 +51,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+export default RootLayout

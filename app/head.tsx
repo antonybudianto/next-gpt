@@ -1,4 +1,4 @@
-export default function Head() {
+const Head = () => {
   return (
     <>
       <title>Next GPT</title>
@@ -17,5 +17,7 @@ export default function Head() {
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="theme-color" content="#000000" />
     </>
-  );
+  )
 }
+
+export default Head

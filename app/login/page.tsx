@@ -6,7 +6,7 @@ import { getAuth, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 import { isWhitelisted } from "../utils/whitelist";
 
-export default function LoginView() {
+const LoginView = () => {
   const [loading, setLoading] = useState(true);
   const signInGoogle = useCallback(() => {
     setLoading(true);
@@ -19,10 +19,12 @@ export default function LoginView() {
       });
   }, []);
 
+  const auth = getAuth();
+
   useEffect(() => {
-    const auth = getAuth();
     auth.onAuthStateChanged(
       (user) => {
+        console.log('login:',user)
         if (!user) {
           setLoading(false);
           return;
@@ -75,3 +77,5 @@ export default function LoginView() {
     </div>
   );
 }
+
+export default LoginView

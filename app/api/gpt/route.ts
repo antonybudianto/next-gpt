@@ -40,6 +40,7 @@ export async function GET(req: Request): Promise<Response> {
       );
     }
   } catch (e) {
+    console.error('ERRTOKEN', e)
     return new Response(
       JSON.stringify({
         status: 400,
@@ -72,7 +73,7 @@ export async function POST(req: Request): Promise<Response> {
      * @see https://platform.openai.com/playground?mode=chat
      */
     const payload: OpenAIStreamPayload = {
-      model: "gpt-4-vision-preview",
+      model: "gpt-4-turbo",
       messages: prompt,
       temperature: 0.7,
       top_p: 1,
@@ -92,6 +93,7 @@ export async function POST(req: Request): Promise<Response> {
       return new Response("error");
     }
   } catch (e) {
+    console.error('ER2', e)
     return new Response(
       JSON.stringify({
         status: 400,
