@@ -2,7 +2,7 @@
 
 import "@/app/utils/initFirebase";
 import { useCallback, useEffect, useState } from "react";
-import { getAuth, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 import { isWhitelisted } from "../utils/whitelist";
 
@@ -12,11 +12,21 @@ const LoginView = () => {
     setLoading(true);
     let provider = new GoogleAuthProvider();
     const auth = getAuth();
-    signInWithRedirect(auth, provider)
-      .then((res) => {})
+
+    if (process.env.NODE_ENV === 'development') {
+      signInWithPopup(auth, provider)
+      .then(() => {})
       .finally(() => {
-        setLoading(false);
-      });
+        setLoading(false)
+      })
+    } else {
+      signInWithRedirect(auth, provider)
+        .then((res) => {})
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+
   }, []);
 
   const auth = getAuth();

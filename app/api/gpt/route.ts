@@ -73,7 +73,7 @@ export async function POST(req: Request): Promise<Response> {
      * @see https://platform.openai.com/playground?mode=chat
      */
     const payload: OpenAIStreamPayload = {
-      model: "gpt-4-turbo",
+      model: "gpt-4o",
       messages: prompt,
       temperature: 0.7,
       top_p: 1,
