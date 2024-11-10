@@ -148,9 +148,9 @@ const HomeClient = () => {
 
   return (
     <div className="flex flex-col px-3 lg:px-0 mb-16 lg:mb-36">
-      <div className="flex items-center">
+      <div className="flex items-center justify-center">
         <div
-          className="text-4xl pb-2 mr-2 rounded cursor-pointer hover:bg-gray-700"
+          className="flex justify-center items-center text-4xl px-2 py-1 pt-2 mr-2 rounded cursor-pointer hover:bg-gray-700"
           onClick={() => {
             const modal = document.querySelector(
               "#modalmenu"
