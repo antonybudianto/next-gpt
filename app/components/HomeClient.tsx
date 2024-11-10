@@ -38,7 +38,6 @@ const HomeClient = () => {
     console.log('checking..')
     const auth = getAuth();
     auth.onAuthStateChanged((user) => {
-      console.log('>>',user)
       if (user && user.emailVerified && isWhitelisted(user.email || "")) {
         setAuthUser(user);
         setAuthLoading(false);
