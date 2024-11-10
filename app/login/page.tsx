@@ -57,7 +57,7 @@ const LoginView = () => {
         setLoading(false);
       }
     );
-  }, []);
+  }, [auth]);
 
   return (
     <div className="container mx-auto mt-3 lg:mt-10 max-w-3xl">
