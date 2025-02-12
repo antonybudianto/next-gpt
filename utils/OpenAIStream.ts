@@ -19,11 +19,12 @@ export interface ChatGPTMessage {
 export interface OpenAIStreamPayload {
   model: string;
   messages: ChatGPTMessage[];
-  temperature: number;
+  temperature?: number;
   top_p: number;
   frequency_penalty: number;
   presence_penalty: number;
-  max_tokens: number;
+  max_tokens?: number;
+  max_completion_tokens?: number;
   stream: boolean;
   n: number;
   user: string;
@@ -43,8 +44,10 @@ export async function OpenAIStream(payload: OpenAIStreamPayload) {
     method: "POST",
     body: JSON.stringify(payload),
   });
-  if (res.status > 201) {
-    console.error('err fetch', res.status, res.statusText)
+  if (!res.ok) {
+    const ertxt = await res.text().catch((_) => {});
+    console.error("err fetch", res.status, res.statusText, ertxt);
+    return;
   }
 
   const stream = new ReadableStream({

@@ -70,7 +70,7 @@ const HomeChat = ({
             },
             {
               type: "image_url",
-              image_url: {url: img},
+              image_url: { url: img },
             },
           ];
       setLoading(true);
@@ -388,6 +388,6 @@ const HomeChat = ({
       </form>
     </>
   );
-}
+};
 
-export default HomeChat
+export default HomeChat;
