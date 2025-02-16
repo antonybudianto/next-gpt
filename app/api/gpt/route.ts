@@ -40,7 +40,7 @@ export async function GET(req: Request): Promise<Response> {
       );
     }
   } catch (e) {
-    console.error('ERRTOKEN', e)
+    console.error("ERRTOKEN", e);
     return new Response(
       JSON.stringify({
         status: 400,
@@ -69,17 +69,24 @@ export async function POST(req: Request): Promise<Response> {
       return new Response("No prompt in the request", { status: 400 });
     }
 
+    interface Content {
+      type: string;
+    }
+    let isVision = false;
+    isVision =
+      typeof prompt[0].content === "object" &&
+      (prompt[0].content as Content[]).some((c) => c.type === "image_url");
+
     /**
      * @see https://platform.openai.com/playground?mode=chat
      */
     const payload: OpenAIStreamPayload = {
-      model: "gpt-4o",
+      model: isVision ? "gpt-4o" : "o3-mini",
       messages: prompt,
-      temperature: 0.7,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
-      max_tokens: 4096,
+      max_completion_tokens: isVision ? 16000 : 100000,
       stream: true,
       n: 1,
       user: "guest",
@@ -93,7 +100,7 @@ export async function POST(req: Request): Promise<Response> {
       return new Response("error");
     }
   } catch (e) {
-    console.error('ER2', e)
+    console.error("ER2", e);
     return new Response(
       JSON.stringify({
         status: 400,
