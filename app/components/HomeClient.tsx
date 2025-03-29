@@ -159,18 +159,59 @@ const HomeClient = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar
-        name={authUser?.displayName || "Guest"}
-        currentId={convId}
-        conversations={conversations}
-        onDeleteMessage={handleDelChat}
-        onSelectMessage={handleSelectChat}
-        onNewChat={handleNewChat}
-        onClearChats={handleClearChat}
-        collapsed={sidebarCollapsed}
-        onToggle={toggleSidebar}
-      />
+      {/* Desktop Sidebar */}
+      <div
+        className={`hidden md:block fixed left-0 top-0 bottom-0 z-10 transition-transform duration-300 ease-in-out ${
+          sidebarCollapsed ? "-translate-x-full" : "translate-x-0"
+        }`}
+      >
+        <Sidebar
+          name={authUser?.displayName || "Guest"}
+          currentId={convId}
+          conversations={conversations}
+          onDeleteMessage={handleDelChat}
+          onSelectMessage={handleSelectChat}
+          onNewChat={handleNewChat}
+          onClearChats={handleClearChat}
+          collapsed={false}
+          onToggle={toggleSidebar}
+        />
+      </div>
+
+      {/* Spacer for desktop sidebar */}
+      <div
+        className={`hidden md:block transition-all duration-300 ease-in-out ${
+          sidebarCollapsed ? "w-0" : "w-64"
+        } flex-shrink-0`}
+      ></div>
+
+      {/* Mobile Sidebar with Backdrop */}
+      {!sidebarCollapsed && (
+        <div
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-20"
+          onClick={toggleSidebar}
+        />
+      )}
+
+      <div
+        className={`
+          md:hidden fixed top-0 bottom-0 left-0 z-30
+          transition-transform duration-300 ease-in-out
+          ${sidebarCollapsed ? "-translate-x-full" : "translate-x-0"}
+        `}
+      >
+        <Sidebar
+          name={authUser?.displayName || "Guest"}
+          currentId={convId}
+          conversations={conversations}
+          onDeleteMessage={handleDelChat}
+          onSelectMessage={handleSelectChat}
+          onNewChat={handleNewChat}
+          onClearChats={handleClearChat}
+          collapsed={false}
+          onToggle={toggleSidebar}
+        />
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 relative overflow-auto">

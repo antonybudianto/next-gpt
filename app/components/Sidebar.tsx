@@ -48,12 +48,7 @@ const Sidebar = ({
   const previousDays = conversations.slice(3); // Just for demo purposes
 
   return (
-    <div
-      className={cn(
-        "h-screen py-2 bg-gray-900 border-r border-gray-800 flex flex-col transition-all duration-300 ease-in-out",
-        collapsed ? "w-0 opacity-0 overflow-hidden" : "w-64 opacity-100"
-      )}
-    >
+    <div className="h-screen py-2 w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
       {/* Header */}
       <div className="p-2 flex items-center">
         <Button variant="ghost" size="icon" className="mr-2" onClick={onToggle}>
