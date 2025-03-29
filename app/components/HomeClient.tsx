@@ -7,16 +7,15 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { isWhitelisted } from "../utils/whitelist";
 import type { Chat, Conversation } from "../type";
-import Menu from "./Menu";
-import HomeChat from "./HomeChat";
-import { FaPlus } from "react-icons/fa";
+import Sidebar from "./Sidebar";
+import ChatContainer from "./ChatContainer";
+import ChatHeader from "./ChatHeader";
 
 const HomeClient = () => {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
   const [authUser, setAuthUser] = useState<UserInfo | null>();
-  const [active, setActive] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
   const [convId, setConvId] = useState("");
@@ -35,7 +34,7 @@ const HomeClient = () => {
   }, []);
 
   useEffect(() => {
-    console.log('checking..')
+    console.log("checking..");
     const auth = getAuth();
     auth.onAuthStateChanged((user) => {
       if (user && user.emailVerified && isWhitelisted(user.email || "")) {
@@ -127,7 +126,12 @@ const HomeClient = () => {
       const tmpConvs = [...conversations];
       const idx = tmpConvs.findIndex((c) => c.id === convId);
 
-      if (tmpConvs[idx].name.indexOf("New Chat") !== -1) {
+      if (
+        idx !== -1 &&
+        tmpConvs[idx] &&
+        tmpConvs[idx].name &&
+        tmpConvs[idx].name.indexOf("New Chat") !== -1
+      ) {
         tmpConvs[idx].name =
           typeof prompt === "object" ? (prompt[0].text as string) : prompt;
         setConversations(tmpConvs);
@@ -147,53 +151,24 @@ const HomeClient = () => {
   }, [conversations, resetConv]);
 
   return (
-    <div className="flex flex-col px-3 lg:px-0 mb-16 lg:mb-36">
-      <div className="flex items-center justify-center">
-        <div
-          className="flex justify-center items-center text-4xl px-2 py-1 pt-2 mr-2 rounded cursor-pointer hover:bg-gray-700"
-          onClick={() => {
-            const modal = document.querySelector(
-              "#modalmenu"
-            ) as HTMLDivElement;
-            if (modal) {
-              modal.style.display = "flex";
-            }
-            setTimeout(() => {
-              setActive((ac) => !ac);
-            }, 0);
-          }}
-        >
-          {" "}
-          &#9776;
-        </div>
-        <h1 className="grow font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-          NextGPT
-        </h1>
-        <div
-          onClick={handleNewChat}
-          className="text-blue-300 flex justify-between items-center cursor-pointer gap-2 px-3 py-2 text-md border border-gray-500 rounded hover:bg-gray-700"
-        >
-          <FaPlus />
-          <span className="truncate hidden lg:inline-block overflow-hidden grow text-ellipsis select-none">
-            New chat
-          </span>
-        </div>
-      </div>
-      <Menu
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar
         name={authUser?.displayName || "Guest"}
         currentId={convId}
-        active={active}
         conversations={conversations}
-        setActive={setActive}
         onDeleteMessage={handleDelChat}
         onSelectMessage={handleSelectChat}
         onNewChat={handleNewChat}
         onClearChats={handleClearChat}
       />
 
-      {authLoading ? (
-        <div className="mt-1">
-          <div className="w-full">
+      {/* Main Content */}
+      <div className="flex-1 relative overflow-auto">
+        <ChatHeader userName={authUser?.displayName || "Guest"} />
+
+        {authLoading ? (
+          <div className="flex items-center justify-center h-screen">
             <div className="animate-pulse flex space-x-4">
               <div className="flex-1 space-y-6 py-1">
                 <div className="space-y-3">
@@ -202,10 +177,8 @@ const HomeClient = () => {
               </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <>
-          <HomeChat
+        ) : (
+          <ChatContainer
             convId={convId}
             convChats={chats}
             loading={loading}
@@ -215,10 +188,10 @@ const HomeClient = () => {
             onDone={handleDone}
             onSubmit={handleSubmit}
           />
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
-}
+};
 
-export default HomeClient
+export default HomeClient;
