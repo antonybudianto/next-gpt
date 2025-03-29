@@ -186,45 +186,51 @@ const ChatContainer = ({
   // If there are no chats, show a welcome message
   if (chats.length === 0) {
     return (
-      <div className="pt-16 pb-32">
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+      <div className="flex flex-col h-[calc(100vh-64px)]">
+        <div className="flex-1 flex flex-col items-center justify-center">
           <h1 className="text-4xl font-bold mb-8">What can I help with?</h1>
-          <div className="">
-            <ChatInput
-              prompt={prompt}
-              loading={loading}
-              setPrompt={setPrompt}
-              onSubmit={handleSubmit}
-              onStop={handleStop}
-              onImageUpload={handleImageUpload}
-            />
-          </div>
+        </div>
+        <div className="sticky bottom-0 left-0 right-0">
+          <ChatInput
+            prompt={prompt}
+            loading={loading}
+            setPrompt={setPrompt}
+            onSubmit={handleSubmit}
+            onStop={handleStop}
+            onImageUpload={handleImageUpload}
+          />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="pt-16 pb-32">
-      <div className="flex flex-col">
-        {chats.map((chat, i) => (
-          <ChatMessage
-            key={i}
-            content={chat.prompt}
-            role={chat.user === "user" ? "user" : "assistant"}
-            isLoading={loading && i === chats.length - 1 && chat.user === "bot"}
-          />
-        ))}
-        <div ref={messagesEndRef} />
+    <div className="flex flex-col h-[calc(100vh-64px)]">
+      <div className="flex-1 overflow-y-auto pt-4 pb-4">
+        <div className="flex flex-col">
+          {chats.map((chat, i) => (
+            <ChatMessage
+              key={i}
+              content={chat.prompt}
+              role={chat.user === "user" ? "user" : "assistant"}
+              isLoading={
+                loading && i === chats.length - 1 && chat.user === "bot"
+              }
+            />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
-      <ChatInput
-        prompt={prompt}
-        loading={loading}
-        setPrompt={setPrompt}
-        onSubmit={handleSubmit}
-        onStop={handleStop}
-        onImageUpload={handleImageUpload}
-      />
+      <div className="sticky bottom-0 left-0 right-0">
+        <ChatInput
+          prompt={prompt}
+          loading={loading}
+          setPrompt={setPrompt}
+          onSubmit={handleSubmit}
+          onStop={handleStop}
+          onImageUpload={handleImageUpload}
+        />
+      </div>
     </div>
   );
 };

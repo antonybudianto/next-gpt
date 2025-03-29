@@ -10,6 +10,8 @@ import type { Chat, Conversation } from "../type";
 import Sidebar from "./Sidebar";
 import ChatContainer from "./ChatContainer";
 import ChatHeader from "./ChatHeader";
+import { PanelLeft } from "lucide-react";
+import { Button } from "./ui/button";
 
 const HomeClient = () => {
   const [prompt, setPrompt] = useState("");
@@ -19,7 +21,12 @@ const HomeClient = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
   const [convId, setConvId] = useState("");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const lsRef = useRef(false);
+
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed((prev) => !prev);
+  }, []);
 
   const resetConv = useCallback(() => {
     const uuid = generateUUID();
@@ -161,11 +168,17 @@ const HomeClient = () => {
         onSelectMessage={handleSelectChat}
         onNewChat={handleNewChat}
         onClearChats={handleClearChat}
+        collapsed={sidebarCollapsed}
+        onToggle={toggleSidebar}
       />
 
       {/* Main Content */}
       <div className="flex-1 relative overflow-auto">
-        <ChatHeader userName={authUser?.displayName || "Guest"} />
+        <ChatHeader
+          userName={authUser?.displayName || "Guest"}
+          showSidebarToggle={sidebarCollapsed}
+          onToggleSidebar={toggleSidebar}
+        />
 
         {authLoading ? (
           <div className="flex items-center justify-center h-screen">

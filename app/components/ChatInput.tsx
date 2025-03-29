@@ -47,7 +47,7 @@ const ChatInput = ({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-gray-800 p-4">
+    <div className="bg-background border-t border-gray-800 p-4 w-full">
       <div className="max-w-3xl mx-auto">
         <div className="relative flex items-end rounded-lg border border-gray-700 bg-gray-800 shadow-sm">
           <Button
