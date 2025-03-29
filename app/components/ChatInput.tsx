@@ -132,12 +132,12 @@ const ChatInput = ({
           />
 
           <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-            <Button variant="ghost" size="icon" disabled={loading}>
+            {/* <Button variant="ghost" size="icon" disabled={loading}>
               <Search className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="icon" disabled={loading}>
               <LightbulbIcon className="h-5 w-5" />
-            </Button>
+            </Button> */}
             <Button variant="ghost" size="icon" disabled={loading}>
               <Mic className="h-5 w-5" />
             </Button>

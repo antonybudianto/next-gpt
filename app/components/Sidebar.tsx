@@ -1,6 +1,12 @@
-import { FaInbox, FaPlus, FaSignOutAlt, FaTrashAlt } from "react-icons/fa";
+import {
+  FaInbox,
+  FaPlus,
+  FaSignOutAlt,
+  FaTrashAlt,
+  FaEllipsisH,
+} from "react-icons/fa";
 import type { Conversation } from "../type";
-import { Dispatch, SetStateAction, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { cn } from "../utils/cn";
 import { Button } from "./ui/button";
@@ -10,6 +16,8 @@ import {
   Image as ImageIcon,
   Code2,
   Grid3x3,
+  MoreHorizontal,
+  Trash2,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -35,6 +43,12 @@ const Sidebar = ({
   collapsed = false,
   onToggle,
 }: SidebarProps) => {
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  const toggleDropdown = (id: string) => {
+    setActiveDropdown(activeDropdown === id ? null : id);
+  };
+
   const logout = useCallback(() => {
     signOut(getAuth());
   }, []);
@@ -97,17 +111,50 @@ const Sidebar = ({
         </h3>
         <div className="space-y-1">
           {conversations.map((cv) => (
-            <Button
-              key={cv.id}
-              variant="ghost"
-              className={cn(
-                "w-full justify-start text-sm font-normal",
-                cv.id === currentId ? "bg-gray-800" : ""
-              )}
-              onClick={() => onSelectMessage(cv.id)}
-            >
-              <div className="truncate">{cv.name}</div>
-            </Button>
+            <div key={cv.id} className="group relative flex items-center">
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start text-sm font-normal pr-10",
+                  cv.id === currentId ? "bg-gray-800" : ""
+                )}
+                onClick={() => onSelectMessage(cv.id)}
+              >
+                <div className="truncate">{cv.name}</div>
+              </Button>
+              <div className="absolute right-2 md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-opacity">
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDropdown(cv.id);
+                    }}
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+
+                  {activeDropdown === cv.id && (
+                    <div className="absolute right-0 mt-1 w-40 bg-gray-900 border border-gray-700 rounded-md shadow-lg z-50">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm font-normal text-red-500 hover:text-red-600 hover:bg-gray-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteMessage(cv.id);
+                          setActiveDropdown(null);
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Delete</span>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
