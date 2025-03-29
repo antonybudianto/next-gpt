@@ -1,15 +1,7 @@
 import React, { ChangeEvent, KeyboardEvent, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import {
-  Plus,
-  Search,
-  LightbulbIcon,
-  Mic,
-  Send,
-  StopCircle,
-} from "lucide-react";
-import { FaImage } from "react-icons/fa";
+import { Plus, Mic, Send, StopCircle } from "lucide-react";
 import Compressor from "compressorjs";
 
 interface ChatInputProps {

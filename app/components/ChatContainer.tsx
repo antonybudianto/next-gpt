@@ -189,7 +189,7 @@ const ChatContainer = ({
     return (
       <div className="flex flex-col h-[calc(100vh-64px)]">
         <div className="flex-1 flex flex-col items-center justify-center">
-          <h1 className="text-4xl font-bold mb-8">What can I help with?</h1>
+          <h1 className="text-2xl font-bold mb-8">What can I help with?</h1>
         </div>
         <div className="sticky bottom-0 left-0 right-0">
           <ChatInput

@@ -88,7 +88,7 @@ const Sidebar = ({
       </div>
 
       {/* Model Selection */}
-      <div className="px-2 py-3">
+      {/* <div className="px-2 py-3">
         <div className="flex flex-col space-y-1">
           <Button variant="ghost" className="justify-start font-medium text-sm">
             <div className="flex items-center">
@@ -99,13 +99,13 @@ const Sidebar = ({
             </div>
           </Button>
         </div>
-      </div>
+      </div> */}
 
       {/* Divider */}
       <div className="border-t border-gray-800 my-2"></div>
 
       {/* Yesterday */}
-      <div className="px-2 py-1">
+      <div className="flex-1 px-2 py-1 overflow-y-auto">
         <h3 className="text-xs font-medium text-gray-500 px-3 mb-1">
           All conversations
         </h3>
@@ -160,7 +160,7 @@ const Sidebar = ({
       </div>
 
       {/* Bottom Actions */}
-      <div className="mt-auto border-t border-gray-800 p-2">
+      <div className="mt-auto border-t border-gray-800 p-2 pb-12">
         <Button
           variant="ghost"
           className="w-full justify-start text-sm font-normal"

@@ -25,11 +25,11 @@ const ChatMessage = ({
       }`}
     >
       <div
-        className={`max-w-3xl mx-auto flex gap-4 px-4 md:px-0 ${
+        className={`max-w-3xl mx-auto flex gap-2 md:gap-4 px-4 md:px-0 ${
           role === "user" ? "flex-row-reverse" : ""
         }`}
       >
-        <Avatar className="h-8 w-8 mt-1">
+        <Avatar className="hidden md:block h-8 w-8 mt-1">
           {role === "user" ? (
             <AvatarFallback className="bg-indigo-900">
               {userName.charAt(0).toUpperCase()}
@@ -42,7 +42,7 @@ const ChatMessage = ({
         <div
           className={`chat-message-content ${
             role === "user"
-              ? "bg-indigo-900 text-white rounded-lg p-3 max-w-[80%]"
+              ? "bg-indigo-900 text-white rounded-lg p-3 max-w-[90%] md:max-w-[80%]"
               : "flex-1"
           }`}
         >
