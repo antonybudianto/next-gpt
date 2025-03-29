@@ -200,6 +200,7 @@ const HomeClient = () => {
             setPrompt={setPrompt}
             onDone={handleDone}
             onSubmit={handleSubmit}
+            userName={authUser?.displayName || "Guest"}
           />
         )}
       </div>

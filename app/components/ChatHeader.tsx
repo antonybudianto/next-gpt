@@ -18,7 +18,7 @@ const ChatHeader = ({
   return (
     <div
       className={cn(
-        "fixed top-0 right-0 z-10 bg-background border-b border-gray-800 flex justify-between items-center px-4 py-2 transition-all duration-300",
+        "fixed top-0 right-0 z-10 bg-background    flex justify-between items-center px-4 py-2 transition-all duration-300",
         showSidebarToggle ? "left-0" : "left-64"
       )}
     >
@@ -33,17 +33,12 @@ const ChatHeader = ({
             <PanelLeft className="h-5 w-5" />
           </Button>
         )}
-        <h1 className="text-lg font-semibold">ChatGPT</h1>
-        <ChevronDown className="h-4 w-4 ml-1 text-gray-400" />
+        <h1 className="text-lg font-semibold">NextGPT</h1>
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="outline" className="text-sm">
-          Temporary
-        </Button>
-
         <Avatar className="h-8 w-8">
-          <AvatarFallback className="bg-blue-600">
+          <AvatarFallback className="bg-indigo-900">
             {userName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>

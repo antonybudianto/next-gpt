@@ -10,6 +10,7 @@ import {
   StopCircle,
 } from "lucide-react";
 import { FaImage } from "react-icons/fa";
+import Compressor from "compressorjs";
 
 interface ChatInputProps {
   prompt: string;
@@ -17,7 +18,8 @@ interface ChatInputProps {
   setPrompt: (str: string) => void;
   onSubmit: () => void;
   onStop: () => void;
-  onImageUpload: () => void;
+  onImageUpload?: () => void;
+  onImageSelected?: (imageUrl: string) => void;
 }
 
 const ChatInput = ({
@@ -27,9 +29,52 @@ const ChatInput = ({
   onSubmit,
   onStop,
   onImageUpload,
+  onImageSelected,
 }: ChatInputProps) => {
   const [rows, setRows] = useState(1);
+  const [selectedImage, setSelectedImage] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = (e.target?.files || [])[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    new Compressor(file, {
+      quality: 0.6,
+      maxWidth: 720,
+      maxHeight: 480,
+      convertSize: 500000,
+      convertTypes: "image/png,image/webp",
+      success(_file) {
+        reader.readAsDataURL(_file);
+        reader.onload = function () {
+          const imageUrl = reader.result as string;
+          setSelectedImage(imageUrl);
+          if (onImageSelected) {
+            onImageSelected(imageUrl);
+          }
+        };
+        reader.onerror = function (error) {
+          console.log("Error: ", error);
+        };
+      },
+      error(err) {
+        console.log(err.message);
+      },
+    });
+  };
+
+  const handleImageUploadClick = () => {
+    if (fileRef.current) {
+      fileRef.current.click();
+    }
+    if (onImageUpload) {
+      onImageUpload();
+    }
+  };
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setPrompt(e.target.value);
@@ -49,14 +94,29 @@ const ChatInput = ({
   return (
     <div className="bg-background border-t border-gray-800 p-4 w-full">
       <div className="max-w-3xl mx-auto">
-        <div className="relative flex items-end rounded-lg border border-gray-700 bg-gray-800 shadow-sm">
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/png, image/gif, image/jpeg, image/jpg"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
+        <div className="relative flex items-center rounded-lg border border-gray-700 bg-gray-800 shadow-sm">
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-2 bottom-2"
-            onClick={onImageUpload}
+            className="absolute left-2 top-1/2 transform -translate-y-1/2"
+            onClick={handleImageUploadClick}
           >
-            <Plus className="h-5 w-5" />
+            {selectedImage ? (
+              <img
+                src={selectedImage}
+                alt="Selected"
+                className="h-5 w-5 object-cover rounded"
+              />
+            ) : (
+              <Plus className="h-5 w-5" />
+            )}
           </Button>
 
           <Textarea
@@ -68,9 +128,10 @@ const ChatInput = ({
             rows={rows}
             className="min-h-[60px] border-0 resize-none pl-12 pr-20 py-3 focus-visible:ring-0 focus-visible:ring-offset-0"
             disabled={loading}
+            style={{ paddingTop: "18px" }}
           />
 
-          <div className="absolute right-2 bottom-2 flex items-center gap-2">
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
             <Button variant="ghost" size="icon" disabled={loading}>
               <Search className="h-5 w-5" />
             </Button>

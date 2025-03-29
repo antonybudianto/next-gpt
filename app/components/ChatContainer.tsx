@@ -14,6 +14,7 @@ interface ChatContainerProps {
   setPrompt: (str: string) => void;
   onDone: (chats: Chat[]) => void;
   onSubmit: (prompt: string | Array<Record<string, unknown>>) => void;
+  userName?: string;
 }
 
 const ChatContainer = ({
@@ -25,6 +26,7 @@ const ChatContainer = ({
   setPrompt,
   onDone,
   onSubmit,
+  userName = "Guest",
 }: ChatContainerProps) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array>>();
@@ -178,9 +180,8 @@ const ChatContainer = ({
     }
   }, []);
 
-  const handleImageUpload = useCallback(() => {
-    // This would trigger the file input click in a real implementation
-    console.log("Image upload clicked");
+  const handleImageSelected = useCallback((imageUrl: string) => {
+    setImg(imageUrl);
   }, []);
 
   // If there are no chats, show a welcome message
@@ -197,7 +198,7 @@ const ChatContainer = ({
             setPrompt={setPrompt}
             onSubmit={handleSubmit}
             onStop={handleStop}
-            onImageUpload={handleImageUpload}
+            onImageSelected={handleImageSelected}
           />
         </div>
       </div>
@@ -205,9 +206,9 @@ const ChatContainer = ({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)]">
+    <div className="flex flex-col h-[calc(100vh-32px)]">
       <div className="flex-1 overflow-y-auto pt-4 pb-4">
-        <div className="flex flex-col">
+        <div className="flex flex-col py-10">
           {chats.map((chat, i) => (
             <ChatMessage
               key={i}
@@ -216,6 +217,7 @@ const ChatContainer = ({
               isLoading={
                 loading && i === chats.length - 1 && chat.user === "bot"
               }
+              userName={userName}
             />
           ))}
           <div ref={messagesEndRef} />
@@ -228,7 +230,7 @@ const ChatContainer = ({
           setPrompt={setPrompt}
           onSubmit={handleSubmit}
           onStop={handleStop}
-          onImageUpload={handleImageUpload}
+          onImageSelected={handleImageSelected}
         />
       </div>
     </div>

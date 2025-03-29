@@ -68,7 +68,12 @@ const Sidebar = ({
             />
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="ml-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-2"
+          onClick={onNewChat}
+        >
           <FaPlus className="h-4 w-4" />
         </Button>
       </div>
@@ -93,10 +98,10 @@ const Sidebar = ({
       {/* Yesterday */}
       <div className="px-2 py-1">
         <h3 className="text-xs font-medium text-gray-500 px-3 mb-1">
-          Yesterday
+          All conversations
         </h3>
         <div className="space-y-1">
-          {yesterday.map((cv) => (
+          {conversations.map((cv) => (
             <Button
               key={cv.id}
               variant="ghost"
