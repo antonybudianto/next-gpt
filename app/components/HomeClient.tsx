@@ -10,8 +10,6 @@ import type { Chat, Conversation } from "../type";
 import Sidebar from "./Sidebar";
 import ChatContainer from "./ChatContainer";
 import ChatHeader from "./ChatHeader";
-import { PanelLeft } from "lucide-react";
-import { Button } from "./ui/button";
 
 const HomeClient = () => {
   const [prompt, setPrompt] = useState("");
@@ -214,7 +212,7 @@ const HomeClient = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 relative overflow-auto">
+      <div className="flex-1 relative overflow-hidden">
         <ChatHeader
           userName={authUser?.displayName || "Guest"}
           showSidebarToggle={sidebarCollapsed}

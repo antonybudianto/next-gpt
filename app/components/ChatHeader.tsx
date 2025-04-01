@@ -35,7 +35,7 @@ const ChatHeader = ({
 
       <div className="flex items-center gap-2">
         <Avatar className="h-8 w-8">
-          <AvatarFallback className="bg-indigo-900">
+          <AvatarFallback className="bg-sky-900">
             {userName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>

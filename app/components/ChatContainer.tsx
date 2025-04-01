@@ -206,7 +206,7 @@ const ChatContainer = ({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-32px)]">
+    <div className="flex flex-col h-[calc(100vh)]">
       <div className="flex-1 overflow-y-auto pt-4 pb-4">
         <div className="flex flex-col py-10">
           {chats.map((chat, i) => (
